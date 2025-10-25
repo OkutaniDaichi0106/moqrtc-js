@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     /* Language and Environment */
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    "target": "esnext",
+    "lib": ["esnext", "dom", "dom.iterable", "webworker"],
     
     /* Modules */
-    "module": "ES2022",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     
     /* Emit */
