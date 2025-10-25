@@ -1,0 +1,52 @@
+{
+  "name": "moqrtc-ts",
+  "version": "0.1.0",
+  "description": "TypeScript implementation of a real-time communication protocol over Media over QUIC (MOQ)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "moq",
+    "quic",
+    "real-time",
+    "media",
+    "streaming",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OkutaniDaichi0106/moqrtc-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OkutaniDaichi0106/moqrtc-js/issues"
+  },
+  "homepage": "https://github.com/OkutaniDaichi0106/moqrtc-js#readme"
+}
