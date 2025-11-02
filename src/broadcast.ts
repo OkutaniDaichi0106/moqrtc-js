@@ -5,18 +5,18 @@ import {
     JsonEncoder,
     GroupCache,
     type EncodedChunk,
-} from "./internal";
+} from "./internal/index.ts";
 import {
     CATALOG_TRACK_NAME,
     CatalogInitSchema,
     DEFAULT_CATALOG_VERSION
-} from "./catalog";
-import type { TrackDescriptor, CatalogInit } from "./catalog";
+} from "./catalog/index.ts";
+import type { TrackDescriptor, CatalogInit } from "./catalog/index.ts";
 import type { Context, CancelCauseFunc } from "golikejs/context";
 import { withCancelCause, background } from "golikejs/context";
-import { participantName } from "./room";
-import { CatalogEncoder,TrackCatalog,CatalogDecoder } from "./internal/catalog_stream";
-import type { EncodeDestination } from "./internal/container";
+import { participantName } from "./room.ts";
+import { CatalogEncoder,TrackCatalog,CatalogDecoder } from "./internal/catalog_stream.ts";
+import type { EncodeDestination } from "./internal/container.ts";
 
 type EncodeCallback = (chunk: EncodedChunk) => Promise<void>;
 

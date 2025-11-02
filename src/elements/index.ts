@@ -1,6 +1,6 @@
-export * from "./room";
+export * from "./room.ts";
 
-import { defineRoom } from "./room";
+import { defineRoom } from "./room.ts";
 
 export function defineAll(): void {
     defineRoom();

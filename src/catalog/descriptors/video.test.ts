@@ -1,4 +1,4 @@
-import { VideoConfigSchema, VideoTrackSchema } from "./video";
+import { VideoConfigSchema, VideoTrackSchema } from "./video.ts";
 import { describe, expect, test } from "vitest";
 
 const baseConfig = {

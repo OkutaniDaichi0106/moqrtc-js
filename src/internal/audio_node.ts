@@ -1,13 +1,13 @@
 // Audio node API: AudioNode, AudioEncodeNode, AudioDecodeNode
 // Based on VideoEncodeNode and VideoDecodeNode patterns
 // Uses Web Audio API AudioEncoder/AudioDecoder for encoding/decoding
-import { GroupCache } from "./cache";
-import { EncodedContainer, cloneChunk } from "./container";
-import type { EncodedChunk, EncodeDestination } from "./container";
+import { GroupCache } from "./cache.ts";
+import { EncodedContainer, cloneChunk } from "./container.ts";
+import type { EncodedChunk, EncodeDestination } from "./container.ts";
 import { TrackWriter, TrackReader,InternalSubscribeErrorCode } from "@okutanidaichi/moqt";
 import { readVarint } from "@okutanidaichi/moqt/io";
-import { importWorkletUrl as importOffloadWorkletUrl, workletName as offloadWorkletName} from "./audio_offload_worklet";
-import { workletName as hijackWorkletName, importWorkletUrl as importHijackWorkletUrl } from "./audio_hijack_worklet";
+import { importWorkletUrl as importOffloadWorkletUrl, workletName as offloadWorkletName} from "./audio_offload_worklet.ts";
+import { workletName as hijackWorkletName, importWorkletUrl as importHijackWorkletUrl } from "./audio_hijack_worklet.ts";
 
 export class AudioEncodeNode implements AudioNode {
 	#encoder: AudioEncoder;

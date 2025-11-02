@@ -5,7 +5,7 @@ import {
     uint53,
     uint62Schema,
     uint62
-} from './integers';
+} from './integers.ts';
 import { z } from 'zod';
 import { describe, test, expect, beforeEach, afterEach, it, vi } from 'vitest';
 

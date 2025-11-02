@@ -11,7 +11,7 @@ vi.mock("@okutanidaichi/moqt", () => ({
 // DO NOT mock golikejs/sync - use the real Mutex and Cond implementations!
 // This gives us real synchronization behavior and catches integration bugs.
 
-import { GroupCache, TrackCache } from "./cache";
+import { GroupCache, TrackCache } from "./cache.ts";
 import { ExpiredGroupErrorCode, InternalGroupErrorCode } from "@okutanidaichi/moqt";
 import type { GroupSequence, Frame, GroupWriter } from "@okutanidaichi/moqt";
 import type { Source } from "@okutanidaichi/moqt/io";

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Room,participantName,broadcastPath } from "./room";
+import { Room,participantName,broadcastPath } from "./room.ts";
 
 vi.mock("@okutanidaichi/moqt", () => ({
     validateBroadcastPath: vi.fn((path: string) => path),

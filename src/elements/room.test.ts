@@ -1,5 +1,5 @@
-import { RoomElement, defineRoom } from "./room";
-import { Room } from "../room";
+import { RoomElement, defineRoom } from "./room.ts";
+import { Room } from "../room.ts";
 import { describe, test, expect, beforeEach, vi, it, beforeAll, afterEach } from 'vitest';
 
 vi.mock("../room", () => ({

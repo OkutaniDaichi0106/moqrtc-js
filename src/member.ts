@@ -1,4 +1,4 @@
-import type { BroadcastSubscriber } from "./broadcast";
+import type { BroadcastSubscriber } from "./broadcast.ts";
 
 export interface JoinedLocalMember {
     remote: false;

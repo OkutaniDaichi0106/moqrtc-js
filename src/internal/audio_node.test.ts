@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
 	AudioEncodeNode,
 	AudioDecodeNode,
-} from './audio_node';
-import type { EncodeDestination, EncodedContainer } from "./container";
+} from './audio_node.ts';
+import type { EncodeDestination, EncodedContainer } from "./container.ts";
 
 // Mock implementations for Web APIs
 class MockAudioData implements AudioData {

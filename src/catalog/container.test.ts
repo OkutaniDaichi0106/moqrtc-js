@@ -1,4 +1,4 @@
-import { ContainerSchema } from './container';
+import { ContainerSchema } from './container.ts';
 import { z } from 'zod';
 import { describe, test, expect, beforeEach, it } from 'vitest';
 

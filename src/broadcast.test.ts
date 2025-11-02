@@ -1,8 +1,8 @@
-import * as room from "./room";
+import * as room from "./room.ts";
 import { withCancelCause } from "golikejs/context";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { BroadcastPublisher, BroadcastSubscriber } from "./broadcast";
+import { BroadcastPublisher, BroadcastSubscriber } from "./broadcast.ts";
 
 // Mock external dependencies
 vi.mock("./room", () => ({

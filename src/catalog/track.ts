@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { uint8Schema, uint62Schema } from "./integers"
-import { ContainerSchema } from "./container"
+import { uint8Schema, uint62Schema } from "./integers.ts"
+import { ContainerSchema } from "./container.ts"
 
 export const TrackDescriptorSchema = z.object({
 	name: z.string().min(1),

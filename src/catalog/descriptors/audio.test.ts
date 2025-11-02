@@ -1,4 +1,4 @@
-import { AudioConfigSchema, AudioTrackSchema } from "./audio";
+import { AudioConfigSchema, AudioTrackSchema } from "./audio.ts";
 import { describe, expect, test } from "vitest";
 
 const baseConfig = {

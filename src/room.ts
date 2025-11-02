@@ -21,7 +21,7 @@ import {
 import type {
     JoinedMember,
     LeftMember
-} from "./member";
+} from "./member.ts";
 
 const HANG_EXTENSION = '.hang';
 

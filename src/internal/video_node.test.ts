@@ -9,8 +9,8 @@ import {
 	VideoRenderFunctions,
 	VideoDecodeNode,
 	VideoObserveNode
-} from './video_node';
-import type { EncodedContainer, EncodeDestination } from "./container";
+} from './video_node.ts';
+import type { EncodedContainer, EncodeDestination } from "./container.ts";
 
 // Mock implementations for Web APIs
 class MockVideoFrame implements VideoFrame {

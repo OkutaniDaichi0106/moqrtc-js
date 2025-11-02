@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { TimeseriesTrackSchema } from './timeseries';
+import { TimeseriesTrackSchema } from './timeseries.ts';
 
 const createMeasurements = () => new Map([
 	['temperature', {

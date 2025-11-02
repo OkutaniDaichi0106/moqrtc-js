@@ -3,7 +3,7 @@ import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 // Mock the external dependencies before importing the module under test
 vi.mock("@okutanidaichi/moqt", () => ({}));
 
-import { EncodeErrorCode, DecodeErrorCode } from "./error";
+import { EncodeErrorCode, DecodeErrorCode } from "./error.ts";
 
 describe("Error Constants", () => {
     describe("EncodeErrorCode", () => {

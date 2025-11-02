@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
-import { Device, DeviceProps } from "./device";
+import { Device, DeviceProps } from "./device.ts";
 import { Cond, Channel } from "golikejs/sync";
 
 // Create mock functions that can be reused

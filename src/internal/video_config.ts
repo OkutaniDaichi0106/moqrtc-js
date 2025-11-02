@@ -1,4 +1,4 @@
-import { isFirefox } from './browser';
+import { isFirefox } from './browser.ts';
 
 // Export codec lists so callers can reuse and avoid reallocation.
 export const VIDEO_HARDWARE_CODECS = [

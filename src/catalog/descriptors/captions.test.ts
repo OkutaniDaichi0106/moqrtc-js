@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CaptionsTrackSchema } from './captions';
+import { CaptionsTrackSchema } from './captions.ts';
 
 const validDescriptor = {
 	name: 'captions-en',

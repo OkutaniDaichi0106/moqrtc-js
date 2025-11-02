@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { uint62Schema } from "./integers"
-import { TrackDescriptorSchema } from "./track"
+import { uint62Schema } from "./integers.ts"
+import { TrackDescriptorSchema } from "./track.ts"
 
 export const DEFAULT_CATALOG_VERSION = "@gomoqt/v1"
 

@@ -12,7 +12,7 @@ vi.mock('./audio_offload_worklet', () => ({
 }));
 
 // Import after mocking
-import { importWorkletUrl } from './audio_offload_worklet';
+import { importWorkletUrl } from './audio_offload_worklet.ts';
 
 describe("audio_offload_worklet", () => {
     afterEach(() => {

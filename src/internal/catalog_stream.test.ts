@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MockedFunction } from "vitest";
-import { CatalogEncoder, CatalogDecoder, TrackCatalog } from "./catalog_stream";
+import { CatalogEncoder, CatalogDecoder, TrackCatalog } from "./catalog_stream.ts";
 import type { TrackWriter, TrackReader, GroupWriter, GroupReader, Frame } from "@okutanidaichi/moqt";
-import type { TrackDescriptor } from "../catalog/track";
-import { JsonLineEncoder, JsonLineDecoder, EncodedJsonChunk } from "../internal/json";
+import type { TrackDescriptor } from "../catalog/track.ts";
+import { JsonLineEncoder, JsonLineDecoder, EncodedJsonChunk } from "../internal/json.ts";
 import { background, withCancel, ContextCancelledError, Context } from "golikejs/context";
 
 // Helper to create mock GroupWriter

@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DefaultVolume, DefaultMinGain, DefaultFadeTime, MIN_GAIN_FALLBACK, FADE_TIME_FALLBACK, isValidMinGain, isValidFadeTime, isValidVolume, VolumeController } from './volume';
-import { setupGlobalMocks, resetGlobalMocks } from './test-utils.test';
+import { DefaultVolume, DefaultMinGain, DefaultFadeTime, MIN_GAIN_FALLBACK, FADE_TIME_FALLBACK, isValidMinGain, isValidFadeTime, isValidVolume, VolumeController } from './volume.ts';
+import { setupGlobalMocks, resetGlobalMocks } from './test-utils.test.ts';
 
 // Type augmentation for testing globalThis properties
 declare global {

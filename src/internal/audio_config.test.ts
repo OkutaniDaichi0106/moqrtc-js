@@ -6,7 +6,7 @@ import {
     audioEncoderConfig, 
     upgradeAudioEncoderConfig,
     AudioEncoderOptions 
-} from './audio_config';
+} from './audio_config.ts';
 
 // Mock AudioEncoder
 const mockAudioEncoder = {

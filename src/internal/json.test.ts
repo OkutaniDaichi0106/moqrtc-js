@@ -12,14 +12,14 @@ import {
     reviveDate,
     JSON_RULES,
     JsonValueSchema
-} from "./json";
+} from "./json.ts";
 import type {
     JsonEncoderConfig,
     JsonDecoderConfig,
     EncodedJsonChunkInit,
     JsonRuleName
-} from "./json";
-import type { JsonValue } from "./json";
+} from "./json.ts";
+import type { JsonValue } from "./json.ts";
 
 describe("JsonValueSchema", () => {
     describe("valid values", () => {

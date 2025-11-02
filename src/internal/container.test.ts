@@ -16,8 +16,8 @@ vi.mock("@okutanidaichi/moqt/io", () => ({
     readVarint: vi.fn().mockReturnValue([BigInt(0), 0]),
 }));
 
-import { EncodedContainer } from "./container";
-import type { EncodedChunk } from "./container";
+import { EncodedContainer } from "./container.ts";
+import type { EncodedChunk } from "./container.ts";
 import { writeVarint, varintLen } from "@okutanidaichi/moqt/io";
 
 // Type-safe mock functions

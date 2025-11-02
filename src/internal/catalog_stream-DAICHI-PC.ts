@@ -1,7 +1,7 @@
-import type { CatalogInit } from "../catalog/init";
-import { CatalogInitSchema } from "../catalog/init";
-import type { TrackDescriptor,CatalogLine } from "../catalog/track";
-import { TrackDescriptorSchema,TrackDescriptorsSchema,CatalogLineSchema } from "../catalog/track";
+import type { CatalogInit } from "../catalog/init.ts";
+import { CatalogInitSchema } from "../catalog/init.ts";
+import type { TrackDescriptor,CatalogLine } from "../catalog/track.ts";
+import { TrackDescriptorSchema,TrackDescriptorsSchema,CatalogLineSchema } from "../catalog/track.ts";
 import type { Context,CancelFunc } from "golikejs/context";
 import {
     withCancelCause,
@@ -21,10 +21,10 @@ import type {
     BytesFrame
 } from "@okutanidaichi/moqt";
 import { Channel } from "golikejs/channel";
-import { JsonLineDecoder, EncodedJsonChunk,JsonLineEncoder } from "../internal/json";
-import type { JsonObject } from "../internal/json";
+import { JsonLineDecoder, EncodedJsonChunk,JsonLineEncoder } from "../internal/json.ts";
+import type { JsonObject } from "../internal/json.ts";
 import { track } from "happy-dom/lib/PropertySymbol";
-import type { EncodedChunk, EncodeDestination } from "./container";
+import type { EncodedChunk, EncodeDestination } from "./container.ts";
 
 export class TrackCatalog {
     readonly descriptor: TrackDescriptor;

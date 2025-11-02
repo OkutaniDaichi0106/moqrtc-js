@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CatalogInitSchema, CatalogInit, DEFAULT_CATALOG_VERSION } from './init';
+import { CatalogInitSchema, CatalogInit, DEFAULT_CATALOG_VERSION } from './init.ts';
 import { z } from 'zod';
 
 describe('CatalogInit', () => {

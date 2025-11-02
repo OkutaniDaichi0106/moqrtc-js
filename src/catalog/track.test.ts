@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { z } from 'zod';
-import { TrackDescriptorSchema, TrackDescriptor } from './track';
+import { TrackDescriptorSchema, TrackDescriptor } from './track.ts';
 
 describe('Track', () => {
     describe('TrackSchema', () => {

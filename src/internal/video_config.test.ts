@@ -5,7 +5,7 @@ import {
     VideoEncoderOptions,
     videoEncoderConfig,
     upgradeEncoderConfig
-} from './video_config';
+} from './video_config.ts';
 
 // Mock the browser module
 vi.mock('./browser', () => ({

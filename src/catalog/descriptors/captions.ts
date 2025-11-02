@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { uint8Schema, uint62Schema } from "../integers"
-import { ContainerSchema } from "../container"
-import { TrackDescriptorSchema } from "../track"
+import { uint8Schema, uint62Schema } from "../integers.ts"
+import { ContainerSchema } from "../container.ts"
+import { TrackDescriptorSchema } from "../track.ts"
 
 export const CaptionsTrackSchema = TrackDescriptorSchema.extend({
 	schema: z.literal('captions'),

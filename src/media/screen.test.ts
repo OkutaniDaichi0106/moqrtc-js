@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { Screen, ScreenProps } from "./screen";
+import { Screen, ScreenProps } from "./screen.ts";
 
 // Mock navigator.mediaDevices.getDisplayMedia
 const mockGetDisplayMedia = vi.fn<(constraints?: DisplayMediaStreamOptions) => Promise<MediaStream>>();

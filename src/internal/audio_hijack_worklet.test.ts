@@ -6,7 +6,7 @@ vi.mock('./audio_hijack_worklet', () => ({
 }));
 
 // Import after mocking
-import { importWorkletUrl } from './audio_hijack_worklet';
+import { importWorkletUrl } from './audio_hijack_worklet.ts';
 
 describe("audio_hijack_worklet", () => {
     afterEach(() => {

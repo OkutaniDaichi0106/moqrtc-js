@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, vi, type Mock, type MockedClass } from 'vitest';
 import type { Mocked } from 'vitest';
-import { Camera, CameraProps } from "./camera";
-import { Device } from "./device";
+import { Camera, CameraProps } from "./camera.ts";
+import { Device } from "./device.ts";
 
 // Mock the Device class to isolate Camera behavior from actual device access
 vi.mock("./device", () => ({

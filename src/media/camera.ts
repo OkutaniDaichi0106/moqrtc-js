@@ -1,5 +1,5 @@
-import type { DeviceProps } from "./device";
-import { Device } from "./device";
+import type { DeviceProps } from "./device.ts";
+import { Device } from "./device.ts";
 
 export interface CameraProps {
     device?: DeviceProps;

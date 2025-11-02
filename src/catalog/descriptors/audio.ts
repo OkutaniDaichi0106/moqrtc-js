@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { uint8Schema, uint53Schema } from "../integers"
-import { ContainerSchema } from "../container"
-import { TrackDescriptorSchema } from "../track"
+import { uint8Schema, uint53Schema } from "../integers.ts"
+import { ContainerSchema } from "../container.ts"
+import { TrackDescriptorSchema } from "../track.ts"
 
 // Helper function to convert hex string to Uint8Array
 const hexStringToUint8Array = (hexString: string): Uint8Array => {

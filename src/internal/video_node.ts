@@ -2,12 +2,12 @@
 // Based on Web Audio API structure: https://developer.mozilla.org/en-US/docs/Web/API/AudioNode
 // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
 // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
-import { EncodedContainer } from './container';
-import { cloneChunk } from './container';
+import { EncodedContainer } from './container.ts';
+import { cloneChunk } from './container.ts';
 import { TrackWriter,TrackReader } from "@okutanidaichi/moqt";
 import { GroupCache } from ".";
 import { readVarint } from "@okutanidaichi/moqt/io";
-import type { EncodedChunk, EncodeDestination } from "./container";
+import type { EncodedChunk, EncodeDestination } from "./container.ts";
 
 export type VideoContextState = 'running' | 'suspended' | 'closed';
 

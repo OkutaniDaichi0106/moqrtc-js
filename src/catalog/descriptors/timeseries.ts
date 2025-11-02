@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { TrackDescriptorSchema } from "../track"
-import { uint53Schema } from "../integers";
+import { TrackDescriptorSchema } from "../track.ts"
+import { uint53Schema } from "../integers.ts";
 
 export const MeasurementSchema = z.object({
 	// Measurement type

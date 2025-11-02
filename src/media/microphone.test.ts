@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, vi, Mock } from 'vitest';
-import { Microphone, MicrophoneProps } from "./microphone";
-import { Device } from "./device";
+import { Microphone, MicrophoneProps } from "./microphone.ts";
+import { Device } from "./device.ts";
 
 // Mock the Device class
 vi.mock("./device", () => ({

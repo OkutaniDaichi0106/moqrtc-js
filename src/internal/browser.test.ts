@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { isChrome, isFirefox } from './browser.js';
+import { isChrome, isFirefox } from './browser.js.ts';
 
 describe('browser', () => {
   describe('isChrome', () => {

@@ -1,4 +1,4 @@
-import { Profile, ProfileInit } from "./profile";
+import { Profile, ProfileInit } from "./profile.ts";
 import { describe, test, expect, beforeEach } from 'vitest';
 
 describe("Profile", () => {

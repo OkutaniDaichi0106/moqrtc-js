@@ -1,5 +1,5 @@
-import { Device } from "./device";
-import type { DeviceProps } from "./device";
+import { Device } from "./device.ts";
+import type { DeviceProps } from "./device.ts";
 
 export interface MicrophoneProps {
     device?: DeviceProps;

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { ProfileTrackSchema } from './profile';
+import { ProfileTrackSchema } from './profile.ts';
 
 const createValidDescriptor = () => ({
 	name: 'profile-user',
