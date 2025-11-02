@@ -1,58 +1,92 @@
-# Deno Test & Mocking Rules (Subtest + Table-driven)
+# Deno Test & Mocking Rules (Subtest + Table-driven) — Simplified
+
+## Role
+You are a Senior TypeScript/Deno test engineer.
+
+### Your Tasks
+1. **Write test cases** for a given implementation file using TDD principles.
+2. **Create test files** named `*_test.ts` (e.g., `foo_test.ts` for `foo.ts`) next to the implementation.
+3. **Use `Deno.test` + hierarchical `t.step` subtests** for clear, nested test organization.
+4. **Ensure tests** cover normal, edge, error, and boundary cases with type safety.
+
+---
 
 ## Core Principles
 
 ### Coverage
-- Normal, edge, boundary cases
-- Invalid inputs, error paths, type validation
-- Null/undefined, side effects, security
+- Test normal, edge, and boundary cases.
+- Validate invalid inputs, error paths, and type safety.
+- Handle null/undefined values, side effects, and security concerns.
 
 ### Code Quality
-- Descriptive test names
-- Comment non-obvious logic
-- Extract common setup inline or in beforeEach
-- Clean up mocks/state
-- No console.log in final tests
+- Use descriptive test names that explain what is being tested.
+- Comment on non-obvious logic.
+- Extract common setup and clean up mocks/state.
+- **Never** include `console.log` in final tests.
 
 ### Mocking
-- DI: mock external dependencies
-- Real: internal utils unless isolated test
-- Spy/Stub: `@std/testing/mock` via imports map
-- Always restore global/shared state
+- Use **Dependency Injection (DI)** for external dependencies (preferred and primary approach for this repository).
+- Test internal utilities directly unless isolation is required.
+- For spy/stub needs: `@std/testing/mock` can be added to `deno.json` imports if required.
+- **Always restore** global/shared state after tests complete.
 
 ---
 
 ## Test Generation Process
-1. Analyze code purpose, dependencies, side effects
-2. Plan normal, edge, error test cases
-3. Generate runnable `.test.ts` using `Deno.test` + `t.step`
-4. Self-review: missing cases, cleanup, type safety
-5. Output final runnable test
+1. **Analyze** the implementation: purpose, dependencies, side effects.
+2. **Plan** test cases: normal, edge, error, and boundary scenarios.
+3. **Generate** runnable `*_test.ts` using `Deno.test` + `t.step` (see template below).
+4. **Self-review:** Check for missing cases, proper cleanup, and type safety.
+5. **Output** the final test file ready to run.
 
-**Notes**:  
-- Ask clarifying questions if context is insufficient  
-- Explain test plan for complex scenarios  
+### When to Ask for Clarification
+- If the code context is ambiguous or insufficient.
+- If the testing strategy needs discussion (e.g., unit vs. integration, mock vs. real).
+- For complex scenarios, explain your test plan before generating code.
+
+---
+
+## Test File Naming & Placement
+
+**File Naming Rule:**
+- For an implementation file `foo.ts`, create test file `foo_test.ts` next to it (NOT `foo.test.ts`).
+
+**Handling Existing Files:**
+- **If `foo_test.ts` already exists:** Append new test cases to it. Do not create duplicates.
+- **If only `foo.test.ts` exists:** Create `foo_test.ts` and port test cases into it. Do not delete or overwrite `foo.test.ts` (preserve for backwards compatibility).
+
+**Imports in Test Files:**
+```ts
+// Correct: Relative import with .ts extension
+import { myFunction } from "./foo.ts";
+```
+
+**Rationale:** Using `*_test.ts` ensures consistency across the codebase and follows Deno testing conventions.
+
 
 ---
 
 ## Table-driven / Multiple Scenario Rules
-- Multiple test cases should be stored in an object (record) or array
-- Each scenario must use `t.step` for a separate subtest
-- Each case should have a clear, descriptive name
-- This improves readability and manageability
+
+When testing multiple scenarios, use **table-driven tests** for clarity and maintainability:
+- Store test cases in a `Map` or array of objects.
+- Use `t.step` to run each scenario as a separate subtest (not in a loop without `t.step`).
+- Give each case a **clear, descriptive name** (e.g., "should handle null input").
+
+### Why Table-driven?
+- Easier to read and add new cases.
+- Each scenario runs independently (better isolation).
+- Clear separation of test data and assertions.
 
 #### Example
 ~~~ts
-import { assertEquals } from "@std/assert";
-
-const cases = {
-  "normal case": { input: 2, expected: 4 },
-  "edge case": { input: 0, expected: 0 },
-  "negative input": { input: -5, expected: -10 },
-};
+const cases = new Map([
+  ["normal case", { input: 2, expected: 4 }],
+  ["edge case", { input: 0, expected: 0 }],
+]);
 
 Deno.test("functionName - multiple scenarios", async (t) => {
-  for (const [name, c] of Object.entries(cases)) {
+  for (const [name, c] of cases) {
     await t.step(name, () => {
       assertEquals(functionUnderTest(c.input), c.expected);
     });
@@ -64,249 +98,106 @@ Deno.test("functionName - multiple scenarios", async (t) => {
 
 ## Mandatory Rules
 
-### Must Have
-- TypeScript + Deno imports (via `deno.json` imports map)
-- `Deno.test` + `t.step` for hierarchical tests
-- Setup/cleanup manually (no shared state between tests)
-- Use `assertEquals`, `assertThrows` from `@std/assert`
-- Cover success, error, edge, boundary cases
-- Descriptive test names with context
-- Mock only external dependencies (use DI)
+### ✓ Must Have
+- TypeScript + Deno imports (use `@std/assert` from `deno.json`).
+- `Deno.test` with `t.step` for hierarchical test structure.
+- Manual setup and cleanup (avoid implicit state).
+- `assertEquals`, `assertThrows`, or other explicit assertions.
+- Coverage: success, error, edge, and boundary cases.
+- Clean up mocks/state after each test completes.
 
-### Must Not Have
-- `deps.ts` or imports from `deps.ts`
-- Full URLs like `https://deno.land/std@...` (use imports map)
-- `console.log` or debugging code
-- Commented-out or magic values
-- Coupled/ambiguous tests
-- Missing cleanup or teardown
-- Over-mocking (avoid mocking internal utilities)
+### ✗ Must Not Have
+- `console.log` or debugging statements in final tests.
+- Commented-out code or magic numbers without explanation.
+- Coupled tests (tests should not depend on each other).
+- Missing cleanup (e.g., unmocked global state, dangling promises).
 
 ---
 
 ## Test Template
 
-~~~ts
+```ts
 import { assertEquals, assertThrows } from "@std/assert";
+import { myFunction } from "./my_function.ts";
 
-Deno.test("functionName - Normal Cases", () => {
-  // Simple sync test
-  assertEquals(functionUnderTest(2), 4);
-  assertEquals(functionUnderTest(0), 0);
-});
+Deno.test("myFunction", async (t) => {
+  // Setup
+  let mockValue = 0;
 
-Deno.test("functionName - Error Cases", () => {
-  // Test error handling
-  assertThrows(() => functionUnderTest(-1), Error, "Invalid input");
-  assertThrows(() => functionUnderTest(null), TypeError);
-});
-
-Deno.test("functionName - Async Cases", async () => {
-  // Async test with setup
-  const result = await asyncFunction(5);
-  assertEquals(result, 10);
-});
-
-// Nested tests with t.step (for complex scenarios)
-Deno.test("ModuleName - Complex Scenario", async (t) => {
-  let resource: any = null;
-
-  await t.step("Normal Cases", async (t) => {
-    await t.step("should do X correctly", () => {
-      assertEquals(complexFunctionUnderTest(2), 4);
-    });
-    await t.step("should handle edge case Y", () => {
-      assertEquals(complexFunctionUnderTest(0), 0);
-    });
+  // Normal cases
+  await t.step("should return correct result on valid input", () => {
+    assertEquals(myFunction(2), 4);
   });
 
-  await t.step("Error Cases", async (t) => {
-    await t.step("should throw on invalid input", () => {
-      assertThrows(() => complexFunctionUnderTest(-1), Error, "Invalid input");
-    });
+  // Error cases
+  await t.step("should throw on invalid input", () => {
+    assertThrows(() => myFunction(-1), Error, "Invalid input");
   });
 
   // Cleanup
-  resource = null;
+  mockValue = undefined;
 });
-~~~
-
-**Imports**: Always use `deno.json` imports map:
-```ts
-import { assertEquals, assertThrows } from "@std/assert";
-import { spy, stub } from "@std/testing/mock";
 ```
+
+**Key points:**
+- Import exactly what you need.
+- Use `t.step` for each test case.
+- Do setup before tests, cleanup after.
+- Use clear assertion messages.
 
 ---
 
 ## Mocking Best Practices
 
-### 1. Dependency Injection
-~~~ts
-export interface UserService { getUser(id: number): Promise<string>; }
+**Priority Order (prefer earlier approaches):**
+
+### 1. Dependency Injection (Preferred)
+Define a dependency as an interface, then inject a mock:
+```ts
+interface UserService {
+  getUser(id: number): Promise<string>;
+}
 
 class MyApp {
   constructor(private userService: UserService) {}
-  async greet(id: number) { return `Hello ${await this.userService.getUser(id)}`; }
+  async greet(id: number) {
+    return `Hello ${await this.userService.getUser(id)}`;
+  }
 }
 
 class MockUserService implements UserService {
-  async getUser(id: number) { return "mock_user"; }
+  async getUser() { return "mock_user"; }
 }
 
 const app = new MyApp(new MockUserService());
-~~~
+```
 
-### 2. Minimal Unit Mocks
-- Mock only what the unit needs
+### 2. Use Spy/Stub (when needed)
+Track function calls and control return values. Note: This repository currently uses DI pattern primarily; add to `deno.json` imports if spy/stub is needed.
 
-### 3. Use std Spy/Stub
-~~~ts
-import { spy, stub } from "@std/testing/mock";
-import { assertEquals } from "@std/assert";
+Example (for reference):
+```ts
+// If using spy/stub: import { Spy } from "@std/testing/mock";
+// Preferred: Use dependency injection pattern (see example 1 above) instead.
+```
 
-// Example: Spy on an object method
-const obj = {
-  method: (x: number) => x * 2,
-};
-
-const spied = spy(obj, "method");
-obj.method(5);
-obj.method(10);
-
-assertEquals(spied.calls.length, 2);
-assertEquals(spied.calls[0].args, [5]);
-spied.restore();
-
-// Example: Stub an object method
-const stubbed = stub(obj, "method", () => 99);
-assertEquals(obj.method(5), 99);
-stubbed.restore();
-~~~
-
-### 4. Minimal Third-party Libraries
-- Prefer `@std` modules + manual mocks
-- Avoid unnecessary external dependencies
-- Keep mocks simple and focused
-
-### 5. Type-safe Mocks
-- Ensure mock signatures match interfaces
-- Use TypeScript `implements` keyword
-
-### 6. Simple Mock Behavior
-~~~ts
-class MockDB implements Database {
-  async fetch() {
-    return [{ id: 1, name: "Alice" }];
-  }
-}
-
-class MockUserService implements UserService {
-  async getUser(id: number): Promise<string> {
-    return `user_${id}`;
-  }
-}
-~~~
+### 3. Minimal Third-party Mocking
+- Avoid heavy mocking libraries.
+- Prefer Dependency Injection or `@std/testing/mock` when needed.
+- Keep mock behavior simple and predictable.
 
 ---
 
-## Complete Practical Example
+## Quick Summary
 
-~~~ts
-import { assertEquals, assertThrows } from "@std/assert";
-import { spy } from "@std/testing/mock";
+| Aspect | Rule |
+|--------|------|
+| **File naming** | `foo_test.ts` (not `foo.test.ts`) next to `foo.ts` |
+| **Test structure** | `Deno.test` + `t.step` for hierarchical subtests |
+| **Multiple cases** | Use table-driven pattern (Map/array of test data) |
+| **Assertions** | `assertEquals`, `assertThrows` from `@std/assert` |
+| **Mocking** | DI first (primary); Spy/Stub optional via `@std/testing/mock` |
+| **Cleanup** | Always restore mocks; clear state after tests |
+| **Coverage** | Normal, edge, error, boundary cases |
 
-// Interface for DI
-interface UserRepository {
-  getUserById(id: number): Promise<{ id: number; name: string }>;
-  deleteUser(id: number): Promise<void>;
-}
-
-// Implementation under test
-class UserService {
-  constructor(private repo: UserRepository) {}
-
-  async getFullName(id: number): Promise<string> {
-    const user = await this.repo.getUserById(id);
-    return user.name.toUpperCase();
-  }
-
-  async removeUser(id: number): Promise<void> {
-    await this.repo.deleteUser(id);
-  }
-}
-
-// Mock implementation
-class MockUserRepository implements UserRepository {
-  private users: Map<number, { id: number; name: string }> = new Map([
-    [1, { id: 1, name: "alice" }],
-    [2, { id: 2, name: "bob" }],
-  ]);
-
-  async getUserById(id: number) {
-    const user = this.users.get(id);
-    if (!user) throw new Error("User not found");
-    return user;
-  }
-
-  async deleteUser(id: number) {
-    this.users.delete(id);
-  }
-}
-
-// Test suite
-Deno.test("UserService - Normal Cases", async (t) => {
-  const repo = new MockUserRepository();
-  const service = new UserService(repo);
-
-  await t.step("getFullName should return uppercase name", async () => {
-    const result = await service.getFullName(1);
-    assertEquals(result, "ALICE");
-  });
-
-  await t.step("getFullName should handle second user", async () => {
-    const result = await service.getFullName(2);
-    assertEquals(result, "BOB");
-  });
-});
-
-Deno.test("UserService - Error Cases", async (t) => {
-  const repo = new MockUserRepository();
-  const service = new UserService(repo);
-
-  await t.step("getFullName should throw on non-existent user", async () => {
-    await assertThrows(
-      () => service.getFullName(999),
-      Error,
-      "User not found"
-    );
-  });
-});
-
-Deno.test("UserService - Verification with Spy", async (t) => {
-  const repo = new MockUserRepository();
-  const service = new UserService(repo);
-
-  await t.step("removeUser should call repo.deleteUser", async () => {
-    const spied = spy(repo, "deleteUser");
-    await service.removeUser(1);
-    assertEquals(spied.calls.length, 1);
-    assertEquals(spied.calls[0].args[0], 1);
-    spied.restore();
-  });
-});
-~~~
-
----
-
-## Summary
-- **Prefer simple tests**: Use `Deno.test` with descriptive names over nested `t.step` when possible
-- **Use `t.step` for grouping**: Only use nested tests when logically grouping related scenarios
-- **DI first**: Inject dependencies for easy mocking  
-- **Unit-level mocks**: Mock only external dependencies  
-- **Use `@std/assert` and `@std/testing`**: Via `deno.json` imports map
-- **Spy on object methods**: `spy(obj, "methodName")` to track calls
-- **Stub to replace behavior**: `stub(obj, "methodName", () => newBehavior)`
-- **Minimal third-party packages**: Prefer `@std` modules
-- **Type-safe mocks**: Implement interfaces with TypeScript
-- **Always cleanup/restore**: Call `.restore()` on spies/stubs
+**Before Output:** Review for missing cases, type safety, and cleanup.
