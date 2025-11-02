@@ -1,283 +1,300 @@
-import { RoomElement, defineRoom } from "./room.ts";
+import { defineRoom, RoomElement } from "./room.ts";
 import { Room } from "../room.ts";
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertExists, assertRejects, assertThrows } from "@std/assert";
 
 vi.mock("../room", () => ({
-    Room: undefined /* TODO: Convert mock */.mockImplementation((config) => ({
-        join: undefined /* TODO: Convert mock */.mockImplementation(async (session, local) => {
-            // Simulate calling onJoin callback
-            if (config.onmember?.onJoin) {
-                config.onmember.onJoin({ name: "test-member", remote: true });
-            }
-        }),
-        leave: undefined /* TODO: Convert mock */.mockImplementation(() => {
-            // Simulate calling onLeave callback when leave is called
-            if (config.onmember?.onLeave) {
-                config.onmember.onLeave({ name: "test-member", remote: true });
-            }
-        }),
-        roomID: "mock-room",
-    })),
+	Room: undefined /* TODO: Convert mock */.mockImplementation((config) => ({
+		join: undefined /* TODO: Convert mock */.mockImplementation(async (session, local) => {
+			// Simulate calling onJoin callback
+			if (config.onmember?.onJoin) {
+				config.onmember.onJoin({ name: "test-member", remote: true });
+			}
+		}),
+		leave: undefined /* TODO: Convert mock */.mockImplementation(() => {
+			// Simulate calling onLeave callback when leave is called
+			if (config.onmember?.onLeave) {
+				config.onmember.onLeave({ name: "test-member", remote: true });
+			}
+		}),
+		roomID: "mock-room",
+	})),
 }));
 
 vi.mock("../internal/audio_hijack_worklet", () => ({
-    importWorkletUrl: vi.fn(() => "mock-url"),
+	importWorkletUrl: vi.fn(() => "mock-url"),
 }));
 
 vi.mock("../internal/audio_offload_worklet", () => ({
-    importUrl: vi.fn(() => "mock-url"),
+	importUrl: vi.fn(() => "mock-url"),
 }));
 
 describe("RoomElement", () => {
-    beforeAll(() => {
-        defineRoom();
-    });
-
-    let element: RoomElement;
-
-    /* TODO: Convert beforeEach */ beforeEach(() => {
-        element = new RoomElement();
-    });
-
-    /* TODO: Convert afterEach */ afterEach(() => {
-        document.body.innerHTML = "";
-    });
-
-    describe("constructor", () => {
-        it("should create an instance", () => {
-            assert(element instanceof RoomElement);
-            assert(element instanceof HTMLElement);
-        });
-    });
+	beforeAll(() => {
+		defineRoom();
+	});
+
+	let element: RoomElement;
+
+	/* TODO: Convert beforeEach */ beforeEach(() => {
+		element = new RoomElement();
+	});
+
+	/* TODO: Convert afterEach */ afterEach(() => {
+		document.body.innerHTML = "";
+	});
+
+	describe("constructor", () => {
+		it("should create an instance", () => {
+			assert(element instanceof RoomElement);
+			assert(element instanceof HTMLElement);
+		});
+	});
+
+	describe("observedAttributes", () => {
+		it("should return correct attributes", () => {
+			assertEquals(RoomElement.observedAttributes, ["room-id", "description"]);
+		});
+	});
+
+	describe("connectedCallback", () => {
+		it("should render the element", () => {
+			document.body.appendChild(element);
+			expect(element.querySelector(".room-status-display")).toBeTruthy();
+			expect(element.querySelector(".local-participant")).toBeTruthy();
+			expect(element.querySelector(".remote-participants")).toBeTruthy();
+		});
+	});
+
+	describe("render", () => {
+		it("should render the DOM structure", () => {
+			element.render();
+			expect(element.querySelector(".room-status-display")).toBeTruthy();
+			expect(element.querySelector(".local-participant")).toBeTruthy();
+			expect(element.querySelector(".remote-participants")).toBeTruthy();
+		});
+	});
 
-    describe("observedAttributes", () => {
-        it("should return correct attributes", () => {
-            assertEquals(RoomElement.observedAttributes, ["room-id", "description"]);
-        });
-    });
+	describe("attributeChangedCallback", () => {
+		it("should handle room-id change", () => {
+			const originalLeave = element.leave;
+			element.leave = undefined /* TODO: Convert mock */;
 
-    describe("connectedCallback", () => {
-        it("should render the element", () => {
-            document.body.appendChild(element);
-            expect(element.querySelector('.room-status-display')).toBeTruthy();
-            expect(element.querySelector('.local-participant')).toBeTruthy();
-            expect(element.querySelector('.remote-participants')).toBeTruthy();
-        });
-    });
+			// Set mock room
+			element.room = { roomID: "old-room" } as any;
 
-    describe("render", () => {
-        it("should render the DOM structure", () => {
-            element.render();
-            expect(element.querySelector('.room-status-display')).toBeTruthy();
-            expect(element.querySelector('.local-participant')).toBeTruthy();
-            expect(element.querySelector('.remote-participants')).toBeTruthy();
-        });
-    });
+			element.attributeChangedCallback("room-id", "old-room", "new-room");
+			// Now leave should be called
+			expect(element.leave).toHaveBeenCalled();
 
-    describe("attributeChangedCallback", () => {
-        it("should handle room-id change", () => {
-            const originalLeave = element.leave;
-            element.leave = undefined /* TODO: Convert mock */;
+			// Restore
+			element.leave = originalLeave;
+		});
 
-            // Set mock room
-            element.room = { roomID: "old-room" } as any;
+		it("should not leave room for description change", () => {
+			const leaveSpy = /* TODO: Convert spy */ undefined(element, "leave");
 
-            element.attributeChangedCallback('room-id', 'old-room', 'new-room');
-            // Now leave should be called
-            expect(element.leave).toHaveBeenCalled();
+			element.room = { roomID: "room" } as any;
 
-            // Restore
-            element.leave = originalLeave;
-        });
+			element.attributeChangedCallback("description", "old", "new");
+			expect(leaveSpy).not.toHaveBeenCalled();
+		});
+	});
 
-        it("should not leave room for description change", () => {
-            const leaveSpy = /* TODO: Convert spy */ undefined(element, "leave");
+	describe("join", () => {
+		it("should join room successfully", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            element.room = { roomID: "room" } as any;
+			element.setAttribute("room-id", "test-room");
 
-            element.attributeChangedCallback('description', 'old', 'new');
-            expect(leaveSpy).not.toHaveBeenCalled();
-        });
-    });
+			await element.join(mockSession as any, mockPublisher as any);
 
-    describe("join", () => {
-        it("should join room successfully", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			assertExists(element.room);
+			assertEquals(element.room?.roomID, "mock-room");
+		});
 
-            element.setAttribute('room-id', 'test-room');
+		it("should set error status when room-id is missing", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            await element.join(mockSession as any, mockPublisher as any);
+			const statusSpy = undefined /* TODO: Convert mock */;
+			element.onstatus = statusSpy;
 
-            assertExists(element.room);
-            assertEquals(element.room?.roomID, "mock-room");
-        });
+			await element.join(mockSession as any, mockPublisher as any);
 
-        it("should set error status when room-id is missing", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			expect(statusSpy).toHaveBeenCalledWith({
+				type: "error",
+				message: "room-id is missing",
+			});
+		});
 
-            const statusSpy = undefined /* TODO: Convert mock */;
-            element.onstatus = statusSpy;
+		it("should handle join error", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            await element.join(mockSession as any, mockPublisher as any);
+			// Temporarily change the mock to throw
+			const RoomMock = vi.mocked(Room);
+			RoomMock.mockImplementationOnce(() => {
+				throw new Error("Join failed");
+			});
 
-            expect(statusSpy).toHaveBeenCalledWith({ type: 'error', message: 'room-id is missing' });
-        });
+			element.setAttribute("room-id", "test-room");
 
-        it("should handle join error", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			const statusSpy = undefined /* TODO: Convert mock */;
+			element.onstatus = statusSpy;
 
-            // Temporarily change the mock to throw
-            const RoomMock = vi.mocked(Room);
-            RoomMock.mockImplementationOnce(() => {
-                throw new Error("Join failed");
-            });
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.setAttribute('room-id', 'test-room');
+			expect(statusSpy).toHaveBeenCalledWith({
+				type: "error",
+				message: "Failed to join: Join failed",
+			});
+		});
 
-            const statusSpy = undefined /* TODO: Convert mock */;
-            element.onstatus = statusSpy;
+		it("should call onjoin callback when member joins", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            await element.join(mockSession as any, mockPublisher as any);
+			element.setAttribute("room-id", "test-room");
 
-            expect(statusSpy).toHaveBeenCalledWith({ type: 'error', message: 'Failed to join: Join failed' });
-        });
+			const onjoinSpy = undefined /* TODO: Convert mock */;
+			element.onjoin = onjoinSpy;
 
-        it("should call onjoin callback when member joins", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.setAttribute('room-id', 'test-room');
+			expect(onjoinSpy).toHaveBeenCalledWith({ name: "test-member", remote: true });
+		});
 
-            const onjoinSpy = undefined /* TODO: Convert mock */;
-            element.onjoin = onjoinSpy;
+		it("should call onleave callback when member leaves", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            await element.join(mockSession as any, mockPublisher as any);
+			element.setAttribute("room-id", "test-room");
 
-            expect(onjoinSpy).toHaveBeenCalledWith({ name: "test-member", remote: true });
-        });
+			const onleaveSpy = undefined /* TODO: Convert mock */;
+			element.onleave = onleaveSpy;
 
-        it("should call onleave callback when member leaves", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.setAttribute('room-id', 'test-room');
+			// Simulate leave by calling room.leave
+			element.room?.leave();
 
-            const onleaveSpy = undefined /* TODO: Convert mock */;
-            element.onleave = onleaveSpy;
+			expect(onleaveSpy).toHaveBeenCalledWith({ name: "test-member", remote: true });
+		});
 
-            await element.join(mockSession as any, mockPublisher as any);
+		it("dispatches 'join' event and adds DOM participant when member joins", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            // Simulate leave by calling room.leave
-            element.room?.leave();
+			element.setAttribute("room-id", "test-room");
 
-            expect(onleaveSpy).toHaveBeenCalledWith({ name: "test-member", remote: true });
-        });
+			const joinListener = vi.fn((ev: Event) => {
+				// noop
+			});
+			element.addEventListener("join", joinListener as any);
 
-        it("dispatches 'join' event and adds DOM participant when member joins", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.setAttribute('room-id', 'test-room');
+			// onjoin was called via mock Room; join event should be dispatched
+			expect(joinListener).toHaveBeenCalled();
 
-            const joinListener = vi.fn((ev: Event) => {
-                // noop
-            });
-            element.addEventListener('join', joinListener as any);
+			// Participant DOM should be added
+			const participant = element.querySelector(".remote-member-test-member");
+			assert(participant);
+		});
 
-            await element.join(mockSession as any, mockPublisher as any);
+		it("dispatches 'leave' event and removes DOM participant when remote leaves", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            // onjoin was called via mock Room; join event should be dispatched
-            expect(joinListener).toHaveBeenCalled();
+			element.setAttribute("room-id", "test-room");
 
-            // Participant DOM should be added
-            const participant = element.querySelector('.remote-member-test-member');
-            assert(participant);
-        });
+			const leaveListener = undefined /* TODO: Convert mock */;
+			element.addEventListener("leave", leaveListener as any);
 
-        it("dispatches 'leave' event and removes DOM participant when remote leaves", async () => {
-            const mockSession = {};
-            const mockPublisher = { name: "test-publisher" };
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.setAttribute('room-id', 'test-room');
+			// participant should be present
+			expect(element.querySelector(".remote-member-test-member")).toBeTruthy();
 
-            const leaveListener = undefined /* TODO: Convert mock */;
-            element.addEventListener('leave', leaveListener as any);
+			// Simulate leave by calling room.leave
+			element.room?.leave();
 
-            await element.join(mockSession as any, mockPublisher as any);
+			expect(leaveListener).toHaveBeenCalled();
 
-            // participant should be present
-            expect(element.querySelector('.remote-member-test-member')).toBeTruthy();
+			// participant should be removed
+			expect(element.querySelector(".remote-member-test-member")).toBeFalsy();
+		});
 
-            // Simulate leave by calling room.leave
-            element.room?.leave();
+		it("sets error status when onjoin handler throws", async () => {
+			const mockSession = {};
+			const mockPublisher = { name: "test-publisher" };
 
-            expect(leaveListener).toHaveBeenCalled();
+			element.setAttribute("room-id", "test-room");
 
-            // participant should be removed
-            expect(element.querySelector('.remote-member-test-member')).toBeFalsy();
-        });
+			element.onjoin = () => {
+				throw new Error("handler fail");
+			};
 
-        it('sets error status when onjoin handler throws', async () => {
-            const mockSession = {};
-            const mockPublisher = { name: 'test-publisher' };
+			const statusSpy = undefined /* TODO: Convert mock */;
+			element.onstatus = statusSpy;
 
-            element.setAttribute('room-id', 'test-room');
+			await element.join(mockSession as any, mockPublisher as any);
 
-            element.onjoin = () => { throw new Error('handler fail'); };
+			// onstatus should have been called with an error status
+			expect(statusSpy).toHaveBeenCalled();
+			const last = statusSpy.mock.calls[statusSpy.mock.calls.length - 1][0];
+			assertEquals(last.type, "error");
+			expect(last.message).toMatch(/onjoin handler failed:/);
+		});
+	});
 
-            const statusSpy = undefined /* TODO: Convert mock */;
-            element.onstatus = statusSpy;
+	describe("leave", () => {
+		it("should leave room and clear state", () => {
+			element.room = {
+				roomID: "test-room",
+				leave: undefined, /* TODO: Convert mock */
+			} as any;
 
-            await element.join(mockSession as any, mockPublisher as any);
+			element.leave();
 
-            // onstatus should have been called with an error status
-            expect(statusSpy).toHaveBeenCalled();
-            const last = statusSpy.mock.calls[statusSpy.mock.calls.length - 1][0];
-            assertEquals(last.type, 'error');
-            expect(last.message).toMatch(/onjoin handler failed:/);
-        });
-    });
+			assertEquals(element.room, undefined);
+		});
 
-    describe("leave", () => {
-        it("should leave room and clear state", () => {
-            element.room = { roomID: "test-room", leave: undefined /* TODO: Convert mock */ } as any;
+		it("should do nothing if no room", () => {
+			element.room = undefined;
 
-            element.leave();
+			expect(() => element.leave()).not.toThrow();
+		});
 
-            assertEquals(element.room, undefined);
-        });
+		it("should dispatch statuschange event", () => {
+			element.room = {
+				roomID: "test-room",
+				leave: undefined, /* TODO: Convert mock */
+			} as any;
 
-        it("should do nothing if no room", () => {
-            element.room = undefined;
+			const eventSpy = undefined /* TODO: Convert mock */;
+			element.addEventListener("statuschange", eventSpy);
 
-            expect(() => element.leave()).not.toThrow();
-        });
+			element.leave();
 
-        it("should dispatch statuschange event", () => {
-            element.room = { roomID: "test-room", leave: undefined /* TODO: Convert mock */ } as any;
+			expect(eventSpy).toHaveBeenCalledWith(expect.objectContaining({
+				detail: { type: "left", message: "Left room test-room" },
+			}));
+		});
+	});
 
-            const eventSpy = undefined /* TODO: Convert mock */;
-            element.addEventListener('statuschange', eventSpy);
+	describe("disconnectedCallback", () => {
+		it("should leave room on disconnect", () => {
+			element.room = {
+				roomID: "test-room",
+				leave: undefined, /* TODO: Convert mock */
+			} as any;
+			const leaveSpy = /* TODO: Convert spy */ undefined(element.room as any, "leave");
 
-            element.leave();
+			element.disconnectedCallback();
 
-            expect(eventSpy).toHaveBeenCalledWith(expect.objectContaining({
-                detail: { type: 'left', message: 'Left room test-room' }
-            }));
-        });
-    });
-
-    describe("disconnectedCallback", () => {
-        it("should leave room on disconnect", () => {
-            element.room = { roomID: "test-room", leave: undefined /* TODO: Convert mock */ } as any;
-            const leaveSpy = /* TODO: Convert spy */ undefined(element.room as any, "leave");
-
-            element.disconnectedCallback();
-
-            expect(leaveSpy).toHaveBeenCalled();
-        });
-    });
+			expect(leaveSpy).toHaveBeenCalled();
+		});
+	});
 });

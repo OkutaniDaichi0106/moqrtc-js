@@ -1,12 +1,12 @@
 // URL getter function for main thread import
 export function importWorkletUrl(): string {
-	return new URL('./audio_hijack_worklet.js', import.meta.url).href;
+	return new URL("./audio_hijack_worklet.js", import.meta.url).href;
 }
 
-export const workletName: string = 'audio-hijacker';
+export const workletName: string = "audio-hijacker";
 
 // Check if we're in a worklet context
-if (typeof AudioWorkletProcessor !== 'undefined') {
+if (typeof AudioWorkletProcessor !== "undefined") {
 	// Worklet code
 	class AudioHijackProcessor extends AudioWorkletProcessor {
 		#currentFrame: number = 0;
@@ -16,7 +16,8 @@ if (typeof AudioWorkletProcessor !== 'undefined') {
 		constructor(options: AudioWorkletNodeOptions) {
 			super();
 			// Get sampleRate from processorOptions or fall back to global sampleRate
-			this.#sampleRate = options.processorOptions?.sampleRate || (globalThis as any).sampleRate;
+			this.#sampleRate = options.processorOptions?.sampleRate ||
+				(globalThis as any).sampleRate;
 			// Get target number of channels from processorOptions
 			this.#targetChannels = options.processorOptions?.targetChannels || 1;
 		}
@@ -29,8 +30,8 @@ if (typeof AudioWorkletProcessor !== 'undefined') {
 			// So do not mix audio from different tracks or different devices.
 			const channels = inputs[0];
 
-			if (!channels || channels.length === 0|| !channels[0]) {
-				return true
+			if (!channels || channels.length === 0 || !channels[0]) {
+				return true;
 			}
 
 			const inputChannels = channels.length;
@@ -73,7 +74,7 @@ if (typeof AudioWorkletProcessor !== 'undefined') {
 				data: data,
 				timestamp: Math.round(this.#currentFrame * 1_000_000 / this.#sampleRate),
 				transfer: [data.buffer],
-			}
+			};
 
 			this.port.postMessage(init);
 

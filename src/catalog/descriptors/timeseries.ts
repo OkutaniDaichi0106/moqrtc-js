@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TrackDescriptorSchema } from "../track.ts"
+import { TrackDescriptorSchema } from "../track.ts";
 import { uint53Schema } from "../integers.ts";
 
 export const MeasurementSchema = z.object({
@@ -9,7 +9,7 @@ export const MeasurementSchema = z.object({
 
 	// Measurement unit
 	// e.g. "celsius", "latitude"
-	unit: z.string().min(1), 
+	unit: z.string().min(1),
 
 	// Interval in milliseconds to collect data points
 	interval: uint53Schema.min(1),
@@ -24,11 +24,10 @@ export const MeasurementSchema = z.object({
 });
 
 export const TimeseriesTrackSchema = TrackDescriptorSchema.extend({
-	schema: z.literal('timeseries'),
+	schema: z.literal("timeseries"),
 	config: z.object({
 		measurements: z.map(z.string(), MeasurementSchema),
 	}),
 });
 
 export type TimeseriesTrackDescriptor = z.infer<typeof TimeseriesTrackSchema>;
-

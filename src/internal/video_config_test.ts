@@ -1,11 +1,11 @@
-import { 
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
 
-    VIDEO_HARDWARE_CODECS, 
-    VIDEO_SOFTWARE_CODECS, 
+import { assert, assertEquals, assertExists } from "@std/assert";
+import {
+    VIDEO_HARDWARE_CODECS,
+    VIDEO_SOFTWARE_CODECS,
     VideoEncoderOptions,
-    videoEncoderConfig,
-    upgradeEncoderConfig
+    upgradeEncoderConfig,
+    videoEncoderConfig
 } from './video_config.ts';
 
 // Mock the browser module

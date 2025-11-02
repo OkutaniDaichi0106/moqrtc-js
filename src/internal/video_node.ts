@@ -2,26 +2,29 @@
 // Based on Web Audio API structure: https://developer.mozilla.org/en-US/docs/Web/API/AudioNode
 // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
 // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
-import { EncodedContainer } from './container.ts';
-import { cloneChunk } from './container.ts';
-import { TrackWriter,TrackReader } from "@okutanidaichi/moqt";
+import { EncodedContainer } from "./container.ts";
+import { cloneChunk } from "./container.ts";
+import { TrackReader, TrackWriter } from "@okutanidaichi/moqt";
 import { GroupCache } from ".";
 import { readVarint } from "@okutanidaichi/moqt/io";
 import type { EncodedChunk, EncodeDestination } from "./container.ts";
 
-export type VideoContextState = 'running' | 'suspended' | 'closed';
+export type VideoContextState = "running" | "suspended" | "closed";
 
 export class VideoContext {
 	readonly frameRate: number;
 	readonly destination: VideoDestinationNode;
 	#nodes: Set<VideoNode> = new Set();
-	#state: VideoContextState = 'running';
+	#state: VideoContextState = "running";
 	#currentTime: number = 0;
 
-	constructor(options?: { frameRate?: number; canvas?: HTMLCanvasElement;}) {
+	constructor(options?: { frameRate?: number; canvas?: HTMLCanvasElement }) {
 		this.frameRate = options?.frameRate ?? 30;
 
-		this.destination = new VideoDestinationNode(this, options?.canvas ?? document.createElement('canvas'));
+		this.destination = new VideoDestinationNode(
+			this,
+			options?.canvas ?? document.createElement("canvas"),
+		);
 	}
 
 	get state(): VideoContextState {
@@ -41,18 +44,18 @@ export class VideoContext {
 	}
 
 	async resume(): Promise<void> {
-		if (this.#state === 'closed') return;
-		this.#state = 'running';
+		if (this.#state === "closed") return;
+		this.#state = "running";
 	}
 
 	async suspend(): Promise<void> {
-		if (this.#state === 'closed') return;
-		this.#state = 'suspended';
+		if (this.#state === "closed") return;
+		this.#state = "suspended";
 	}
 
 	async close(): Promise<void> {
-		if (this.#state === 'closed') return;
-		this.#state = 'closed';
+		if (this.#state === "closed") return;
+		this.#state = "closed";
 
 		for (const n of Array.from(this.#nodes)) {
 			try {
@@ -133,13 +136,13 @@ export class VideoSourceNode extends VideoNode {
 			this.#reader = this.#stream.getReader();
 
 			// Simulate frame processing
-			while (this.#running && this.context.state === 'running') {
-				const {done, value: frame} = await this.#reader.read()
+			while (this.#running && this.context.state === "running") {
+				const { done, value: frame } = await this.#reader.read();
 				if (done) break;
 				void this.process(frame);
 			}
 		} catch (e) {
-			console.error('VideoSourceNode error:', e);
+			console.error("VideoSourceNode error:", e);
 		} finally {
 			this.#running = false;
 		}
@@ -229,7 +232,7 @@ export class VideoAnalyserNode extends VideoNode {
 
 	// Color analysis
 	#colorHistogram: Uint32Array;
-	#dominantColors: Array<{r: number, g: number, b: number, count: number}> = [];
+	#dominantColors: Array<{ r: number; g: number; b: number; count: number }> = [];
 
 	// Spatial features
 	#sharpness: number = 0;
@@ -260,9 +263,15 @@ export class VideoAnalyserNode extends VideoNode {
 	}
 
 	// Basic statistics getters
-	get brightness(): number { return this.#brightness; }
-	get contrast(): number { return this.#contrast; }
-	get saturation(): number { return this.#saturations; }
+	get brightness(): number {
+		return this.#brightness;
+	}
+	get contrast(): number {
+		return this.#contrast;
+	}
+	get saturation(): number {
+		return this.#saturations;
+	}
 
 	// Color analysis getters
 	getColorHistogram(array: Uint32Array): void {
@@ -272,18 +281,28 @@ export class VideoAnalyserNode extends VideoNode {
 		}
 	}
 
-	getDominantColors(): ReadonlyArray<{r: number, g: number, b: number, count: number}> {
+	getDominantColors(): ReadonlyArray<{ r: number; g: number; b: number; count: number }> {
 		return [...this.#dominantColors];
 	}
 
 	// Spatial features getters
-	get sharpness(): number { return this.#sharpness; }
-	get edgeStrength(): number { return this.#edgeStrength; }
-	get textureComplexity(): number { return this.#textureComplexity; }
+	get sharpness(): number {
+		return this.#sharpness;
+	}
+	get edgeStrength(): number {
+		return this.#edgeStrength;
+	}
+	get textureComplexity(): number {
+		return this.#textureComplexity;
+	}
 
 	// Motion features getters
-	get motionMagnitude(): number { return this.#motionMagnitude; }
-	get motionDirection(): number { return this.#motionDirection; }
+	get motionMagnitude(): number {
+		return this.#motionMagnitude;
+	}
+	get motionDirection(): number {
+		return this.#motionDirection;
+	}
 
 	// Frequency domain getters
 	getSpatialFrequencyData(array: Float32Array): void {
@@ -297,13 +316,12 @@ export class VideoAnalyserNode extends VideoNode {
 		// Analyze the video frame and update internal data
 		void this.#analyzeFrame(input);
 
-
 		// Pass context to connected outputs
 		for (const output of Array.from(this.outputs)) {
 			try {
 				void output.process(input);
 			} catch (e) {
-				console.error('VideoAnalyserNode process error', e);
+				console.error("VideoAnalyserNode process error", e);
 			}
 		}
 
@@ -332,7 +350,7 @@ export class VideoAnalyserNode extends VideoNode {
 		try {
 			// Create a temporary canvas for downsampling
 			const canvas = new OffscreenCanvas(sampleWidth, sampleHeight);
-			const ctx = canvas.getContext('2d');
+			const ctx = canvas.getContext("2d");
 			if (!ctx) return;
 
 			// Draw frame to canvas (this handles format conversion and downsampling)
@@ -364,7 +382,7 @@ export class VideoAnalyserNode extends VideoNode {
 					}
 				}
 			} catch (fallbackError) {
-				console.warn('Failed to analyze frame:', fallbackError);
+				console.warn("Failed to analyze frame:", fallbackError);
 				return;
 			}
 		}
@@ -432,33 +450,43 @@ export class VideoAnalyserNode extends VideoNode {
 
 	#calculateDominantColors(): void {
 		// Simple approach: find peaks in histogram
-		const colorCounts: Map<string, {r: number, g: number, b: number, count: number}> = new Map();
+		const colorCounts: Map<string, { r: number; g: number; b: number; count: number }> =
+			new Map();
 
 		// Sample colors from histogram peaks
 		const peaks = this.#findHistogramPeaks();
 
-		this.#dominantColors = peaks.slice(0, 5).map(peak => ({
+		this.#dominantColors = peaks.slice(0, 5).map((peak) => ({
 			r: peak.r,
 			g: peak.g,
 			b: peak.b,
-			count: peak.count
+			count: peak.count,
 		}));
 	}
 
-	#findHistogramPeaks(): Array<{r: number, g: number, b: number, count: number}> {
-		const peaks: Array<{r: number, g: number, b: number, count: number}> = [];
+	#findHistogramPeaks(): Array<{ r: number; g: number; b: number; count: number }> {
+		const peaks: Array<{ r: number; g: number; b: number; count: number }> = [];
 
 		// Find local maxima in each color channel
 		for (let r = 1; r < 255; r++) {
 			const countR = this.#colorHistogram[r] ?? 0;
-			if (countR > (this.#colorHistogram[r - 1] ?? 0) && countR > (this.#colorHistogram[r + 1] ?? 0)) {
+			if (
+				countR > (this.#colorHistogram[r - 1] ?? 0) &&
+				countR > (this.#colorHistogram[r + 1] ?? 0)
+			) {
 				for (let g = 1; g < 255; g++) {
 					const countG = this.#colorHistogram[256 + g] ?? 0;
-					if (countG > (this.#colorHistogram[256 + g - 1] ?? 0) && countG > (this.#colorHistogram[256 + g + 1] ?? 0)) {
+					if (
+						countG > (this.#colorHistogram[256 + g - 1] ?? 0) &&
+						countG > (this.#colorHistogram[256 + g + 1] ?? 0)
+					) {
 						for (let b = 1; b < 255; b++) {
 							const countB = this.#colorHistogram[512 + b] ?? 0;
-							if (countB > (this.#colorHistogram[512 + b - 1] ?? 0) && countB > (this.#colorHistogram[512 + b + 1] ?? 0)) {
-								peaks.push({r, g, b, count: countR + countG + countB});
+							if (
+								countB > (this.#colorHistogram[512 + b - 1] ?? 0) &&
+								countB > (this.#colorHistogram[512 + b + 1] ?? 0)
+							) {
+								peaks.push({ r, g, b, count: countR + countG + countB });
 							}
 						}
 					}
@@ -497,12 +525,11 @@ export class VideoAnalyserNode extends VideoNode {
 		for (let y = 1; y < height - 1; y++) {
 			for (let x = 1; x < width - 1; x++) {
 				const idx = y * width + x;
-				const laplacian =
-					-4 * gray[idx]! +
-					gray[(y-1) * width + x]! +
-					gray[y * width + (x-1)]! +
-					gray[y * width + (x+1)]! +
-					gray[(y+1) * width + x]!;
+				const laplacian = -4 * gray[idx]! +
+					gray[(y - 1) * width + x]! +
+					gray[y * width + (x - 1)]! +
+					gray[y * width + (x + 1)]! +
+					gray[(y + 1) * width + x]!;
 
 				sum += laplacian * laplacian;
 				count++;
@@ -520,14 +547,15 @@ export class VideoAnalyserNode extends VideoNode {
 		for (let y = 1; y < height - 1; y++) {
 			for (let x = 1; x < width - 1; x++) {
 				const idx = y * width + x;
-				const gx =
-					-1 * gray[(y-1) * width + (x-1)]! + 1 * gray[(y-1) * width + (x+1)]! +
-					-2 * gray[y * width + (x-1)]! + 2 * gray[y * width + (x+1)]! +
-					-1 * gray[(y+1) * width + (x-1)]! + 1 * gray[(y+1) * width + (x+1)]!;
+				const gx = -1 * gray[(y - 1) * width + (x - 1)]! +
+					1 * gray[(y - 1) * width + (x + 1)]! +
+					-2 * gray[y * width + (x - 1)]! + 2 * gray[y * width + (x + 1)]! +
+					-1 * gray[(y + 1) * width + (x - 1)]! + 1 * gray[(y + 1) * width + (x + 1)]!;
 
-				const gy =
-					-1 * gray[(y-1) * width + (x-1)]! - 2 * gray[(y-1) * width + x]! - 1 * gray[(y-1) * width + (x+1)]! +
-					1 * gray[(y+1) * width + (x-1)]! + 2 * gray[(y+1) * width + x]! + 1 * gray[(y+1) * width + (x+1)]!;
+				const gy = -1 * gray[(y - 1) * width + (x - 1)]! - 2 * gray[(y - 1) * width + x]! -
+					1 * gray[(y - 1) * width + (x + 1)]! +
+					1 * gray[(y + 1) * width + (x - 1)]! + 2 * gray[(y + 1) * width + x]! +
+					1 * gray[(y + 1) * width + (x + 1)]!;
 
 				sum += Math.sqrt(gx * gx + gy * gy);
 				count++;
@@ -573,7 +601,15 @@ export class VideoAnalyserNode extends VideoNode {
 		const blockSize = 8;
 		for (let by = 0; by < height - blockSize; by += blockSize) {
 			for (let bx = 0; bx < width - blockSize; bx += blockSize) {
-				const motion = this.#findBlockMotion(pixelData, this.#previousFrameData, width, height, bx, by, blockSize);
+				const motion = this.#findBlockMotion(
+					pixelData,
+					this.#previousFrameData,
+					width,
+					height,
+					bx,
+					by,
+					blockSize,
+				);
 				if (motion) {
 					sumDiff += motion.magnitude;
 					sumX += motion.dx;
@@ -592,9 +628,15 @@ export class VideoAnalyserNode extends VideoNode {
 		this.#previousFrameData.set(pixelData);
 	}
 
-	#findBlockMotion(curr: Uint8Array, prev: Uint8Array, width: number, height: number, bx: number, by: number, blockSize: number):
-		{magnitude: number, dx: number, dy: number} | null {
-
+	#findBlockMotion(
+		curr: Uint8Array,
+		prev: Uint8Array,
+		width: number,
+		height: number,
+		bx: number,
+		by: number,
+		blockSize: number,
+	): { magnitude: number; dx: number; dy: number } | null {
 		let minSAD = Infinity;
 		let bestDx = 0;
 		let bestDy = 0;
@@ -603,8 +645,10 @@ export class VideoAnalyserNode extends VideoNode {
 		const searchRange = 4;
 		for (let dy = -searchRange; dy <= searchRange; dy++) {
 			for (let dx = -searchRange; dx <= searchRange; dx++) {
-				if (bx + dx < 0 || bx + dx + blockSize >= width ||
-					by + dy < 0 || by + dy + blockSize >= height) continue;
+				if (
+					bx + dx < 0 || bx + dx + blockSize >= width ||
+					by + dy < 0 || by + dy + blockSize >= height
+				) continue;
 
 				let sad = 0;
 				for (let y = 0; y < blockSize; y++) {
@@ -620,7 +664,8 @@ export class VideoAnalyserNode extends VideoNode {
 						const prevG = prev[prevIdx + 1]!;
 						const prevB = prev[prevIdx + 2]!;
 
-						sad += Math.abs(currR - prevR) + Math.abs(currG - prevG) + Math.abs(currB - prevB);
+						sad += Math.abs(currR - prevR) + Math.abs(currG - prevG) +
+							Math.abs(currB - prevB);
 					}
 				}
 
@@ -635,7 +680,7 @@ export class VideoAnalyserNode extends VideoNode {
 		return {
 			magnitude: Math.sqrt(bestDx * bestDx + bestDy * bestDy),
 			dx: bestDx,
-			dy: bestDy
+			dy: bestDy,
 		};
 	}
 
@@ -690,14 +735,14 @@ export type VideoRenderFunction = (
 	frameWidth: number,
 	frameHeight: number,
 	canvasWidth: number,
-	canvasHeight: number
+	canvasHeight: number,
 ) => { x: number; y: number; width: number; height: number };
 export const VideoRenderFunctions = {
 	contain: (
 		frameWidth: number,
 		frameHeight: number,
 		canvasWidth: number,
-		canvasHeight: number
+		canvasHeight: number,
 	): { x: number; y: number; width: number; height: number } => {
 		const frameAspect = frameWidth / frameHeight;
 		const canvasAspect = canvasWidth / canvasHeight;
@@ -719,7 +764,7 @@ export const VideoRenderFunctions = {
 		frameWidth: number,
 		frameHeight: number,
 		canvasWidth: number,
-		canvasHeight: number
+		canvasHeight: number,
 	): { x: number; y: number; width: number; height: number } => {
 		const frameAspect = frameWidth / frameHeight;
 		const canvasAspect = canvasWidth / canvasHeight;
@@ -741,7 +786,7 @@ export const VideoRenderFunctions = {
 		frameWidth: number,
 		frameHeight: number,
 		canvasWidth: number,
-		canvasHeight: number
+		canvasHeight: number,
 	): { x: number; y: number; width: number; height: number } => {
 		// Fill entire canvas, may distort
 		return { x: 0, y: 0, width: canvasWidth, height: canvasHeight };
@@ -751,7 +796,7 @@ export const VideoRenderFunctions = {
 		frameWidth: number,
 		frameHeight: number,
 		canvasWidth: number,
-		canvasHeight: number
+		canvasHeight: number,
 	): { x: number; y: number; width: number; height: number } => {
 		// Only scale down, never up
 		if (frameWidth <= canvasWidth && frameHeight <= canvasHeight) {
@@ -763,7 +808,7 @@ export const VideoRenderFunctions = {
 			// Scale down using contain logic
 			return VideoRenderFunctions.contain(frameWidth, frameHeight, canvasWidth, canvasHeight);
 		}
-	}
+	},
 };
 
 export class VideoDestinationNode extends VideoNode {
@@ -779,7 +824,7 @@ export class VideoDestinationNode extends VideoNode {
 		canvas: HTMLCanvasElement,
 		options?: {
 			renderFunction?: VideoRenderFunction;
-		}
+		},
 	) {
 		super({ numberOfInputs: 1, numberOfOutputs: 0 });
 		this.#context = context;
@@ -791,7 +836,7 @@ export class VideoDestinationNode extends VideoNode {
 	}
 
 	process(input: VideoFrame): void {
-		if (this.#context.state !== 'running') {
+		if (this.#context.state !== "running") {
 			try {
 				input.close();
 			} catch (_) {
@@ -817,28 +862,31 @@ export class VideoDestinationNode extends VideoNode {
 			try {
 				frame.close();
 			} catch (e) {
-				console.error('VideoDestinationNode frame close error:', e);
+				console.error("VideoDestinationNode frame close error:", e);
 			}
 			return;
 		}
 
 		// Check if delay function is defined
 		if (this.delayFunc) {
-			console.log('Rendering delayed');
+			console.log("Rendering delayed");
 			try {
 				await this.delayFunc();
 			} catch (error) {
-				console.warn('Error during rendering delay:', error);
+				console.warn("Error during rendering delay:", error);
 			}
 		}
 
 		// Calculate rendering dimensions using render function
 		const { x, y, width, height } = this.resizeCallback(
-			frame.displayWidth, frame.displayHeight, this.canvas.width, this.canvas.height
+			frame.displayWidth,
+			frame.displayHeight,
+			this.canvas.width,
+			this.canvas.height,
 		);
 
 		// Get 2D context
-		const ctx = this.canvas.getContext('2d');
+		const ctx = this.canvas.getContext("2d");
 		if (!ctx) return;
 
 		// Clear the canvas
@@ -851,7 +899,7 @@ export class VideoDestinationNode extends VideoNode {
 		try {
 			frame.close();
 		} catch (e) {
-			console.error('[VideoDestinationNode] frame close error:', e);
+			console.error("[VideoDestinationNode] frame close error:", e);
 		}
 	}
 
@@ -877,7 +925,10 @@ export class VideoEncodeNode extends VideoNode {
 
 	#dests: Set<EncodeDestination> = new Set();
 
-	constructor(context: VideoContext, options?: { startSequence?: bigint, isKey?: () => boolean }) {
+	constructor(
+		context: VideoContext,
+		options?: { startSequence?: bigint; isKey?: () => boolean },
+	) {
 		super({ numberOfInputs: 1, numberOfOutputs: 1 });
 		this.#context = context;
 		this.#isKey = options?.isKey ?? (() => false);
@@ -886,10 +937,10 @@ export class VideoEncodeNode extends VideoNode {
 		this.#encoder = new VideoEncoder({
 			output: async (chunk) => {
 				// Pass encoded chunk to all registered destinations
-				await Promise.allSettled(Array.from(this.#dests, dest => dest.output(chunk)));
+				await Promise.allSettled(Array.from(this.#dests, (dest) => dest.output(chunk)));
 			},
 			error: (e) => {
-				console.error('VideoEncoder error:', e);
+				console.error("VideoEncoder error:", e);
 			},
 		});
 	}
@@ -902,7 +953,7 @@ export class VideoEncodeNode extends VideoNode {
 		try {
 			this.#encoder.encode(input, { keyFrame: this.#isKey() });
 		} catch (e) {
-			console.error('encode error', e);
+			console.error("encode error", e);
 		}
 
 		if (input) {
@@ -953,7 +1004,7 @@ export class VideoDecodeNode extends VideoNode {
 				this.process(frame);
 			},
 			error: (e) => {
-				console.error('VideoDecoder error:', e);
+				console.error("VideoDecoder error:", e);
 			},
 		});
 	}
@@ -965,7 +1016,7 @@ export class VideoDecodeNode extends VideoNode {
 	async decodeFrom(stream: ReadableStream<EncodedVideoChunk>): Promise<void> {
 		try {
 			const reader = stream.getReader();
-			while (this.#context.state === 'running') {
+			while (this.#context.state === "running") {
 				const { done, value: chunk } = await reader.read();
 				if (done) {
 					reader.releaseLock();
@@ -975,7 +1026,7 @@ export class VideoDecodeNode extends VideoNode {
 				this.#decoder.decode(chunk);
 			}
 		} catch (e) {
-			console.error('decodeFrom error:', e);
+			console.error("decodeFrom error:", e);
 		}
 	}
 
@@ -985,7 +1036,7 @@ export class VideoDecodeNode extends VideoNode {
 			try {
 				void out.process(input);
 			} catch (e) {
-				console.error('VideoDecodeNode process error:', e);
+				console.error("VideoDecodeNode process error:", e);
 			}
 		}
 
@@ -1001,7 +1052,7 @@ export class VideoDecodeNode extends VideoNode {
 		try {
 			await this.#decoder?.flush();
 		} catch (e) {
-			console.error('VideoDecoder flush error:', e);
+			console.error("VideoDecoder flush error:", e);
 		}
 	}
 
@@ -1024,7 +1075,10 @@ export class VideoObserveNode extends VideoNode {
 	#observer?: IntersectionObserver;
 	#isVisible: boolean = true;
 
-	constructor(context: VideoContext, options?: { threshold?: number; enableBackground?: boolean }) {
+	constructor(
+		context: VideoContext,
+		options?: { threshold?: number; enableBackground?: boolean },
+	) {
 		super({ numberOfInputs: 1, numberOfOutputs: 1 });
 		const threshold = options?.threshold ?? 0.01;
 		const enableBackground = options?.enableBackground ?? false;
@@ -1036,7 +1090,7 @@ export class VideoObserveNode extends VideoNode {
 						this.#isVisible = entry.isIntersecting;
 					}
 				},
-				{ threshold }
+				{ threshold },
 			);
 			// this.#observer.observe(context.destination.canvas);
 		} else {
@@ -1060,7 +1114,7 @@ export class VideoObserveNode extends VideoNode {
 				try {
 					void out.process(input);
 				} catch (e) {
-					console.error('VideoObserveNode process error:', e);
+					console.error("VideoObserveNode process error:", e);
 				}
 			}
 		}

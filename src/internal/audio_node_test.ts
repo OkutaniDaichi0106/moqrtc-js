@@ -1,10 +1,6 @@
-import {
-	AudioEncodeNode,
-	AudioDecodeNode,
-} from './audio_node.ts';
-import type { EncodeDestination, EncodedContainer } from "./container.ts";
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
-
+import { AudioDecodeNode, AudioEncodeNode } from "./audio_node.ts";
+import type { EncodedContainer, EncodeDestination } from "./container.ts";
+import { assert, assertEquals, assertExists, assertRejects, assertThrows } from "@std/assert";
 
 // Mock implementations for Web APIs
 class MockAudioData implements AudioData {
@@ -19,7 +15,7 @@ class MockAudioData implements AudioData {
 		this.numberOfFrames = frames;
 		this.numberOfChannels = channels;
 		this.sampleRate = sampleRate;
-		this.format = 'f32';
+		this.format = "f32";
 		this.duration = (frames / sampleRate) * 1000000; // microseconds
 		this.timestamp = 0;
 	}
@@ -55,7 +51,7 @@ class MockEncodedAudioChunk implements EncodedAudioChunk {
 		// Mock copy
 	}
 
-	constructor(type: EncodedAudioChunkType = 'key', timestamp: number = 0) {
+	constructor(type: EncodedAudioChunkType = "key", timestamp: number = 0) {
 		this.type = type;
 		this.timestamp = timestamp;
 		this.duration = null;
@@ -111,7 +107,11 @@ class MockAudioNode implements AudioNode {
 
 	connect(destinationNode: AudioNode, output?: number, input?: number): AudioNode;
 	connect(destinationParam: AudioParam, output?: number): void;
-	connect(destination: AudioNode | AudioParam, output?: number, input?: number): AudioNode | void {
+	connect(
+		destination: AudioNode | AudioParam,
+		output?: number,
+		input?: number,
+	): AudioNode | void {
 		if (destination instanceof (global as any).AudioNode) {
 			this.outputs.add(destination as MockAudioNode);
 			(destination as MockAudioNode).inputs.add(this);
@@ -129,7 +129,11 @@ class MockAudioNode implements AudioNode {
 	disconnect(destinationNode: AudioNode, output: number, input: number): void;
 	disconnect(destinationParam: AudioParam): void;
 	disconnect(destinationParam: AudioParam, output: number): void;
-	disconnect(destinationOrOutput?: number | AudioNode | AudioParam, output?: number, input?: number): void {
+	disconnect(
+		destinationOrOutput?: number | AudioNode | AudioParam,
+		output?: number,
+		input?: number,
+	): void {
 		if (destinationOrOutput instanceof (global as any).AudioNode) {
 			this.outputs.delete(destinationOrOutput as MockAudioNode);
 			(destinationOrOutput as MockAudioNode).inputs.delete(this);
@@ -143,11 +147,19 @@ class MockAudioNode implements AudioNode {
 		}
 	}
 
-	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+	addEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions,
+	): void {
 		// Mock implementation
 	}
 
-	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+	removeEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | EventListenerOptions,
+	): void {
 		// Mock implementation
 	}
 
@@ -169,9 +181,9 @@ class MockAudioNode implements AudioNode {
 
 // Mock AudioWorkletNode
 class MockAudioWorkletNode {
-	port = { 
-		postMessage: undefined /* TODO: Convert mock */,
-		onmessage: null as ((event: { data: any }) => void) | null
+	port = {
+		postMessage: undefined, /* TODO: Convert mock */
+		onmessage: null as ((event: { data: any }) => void) | null,
 	};
 	connect = undefined /* TODO: Convert mock */;
 	disconnect = undefined /* TODO: Convert mock */;
@@ -185,25 +197,25 @@ class MockAudioWorkletNode {
 /* TODO: Convert beforeEach */ beforeEach(() => {
 	(global as any).window = {
 		AudioNode: MockAudioNode,
-		AudioParam: function() {},
+		AudioParam: function () {},
 	};
 	(global as any).AudioData = MockAudioData;
 });
 
-describe('AudioNode', () => {
-	it('should create AudioNode with default options', () => {
+describe("AudioNode", () => {
+	it("should create AudioNode with default options", () => {
 		const node = new MockAudioNode();
 		assertEquals(node.numberOfInputs, 1);
 		assertEquals(node.numberOfOutputs, 1);
 	});
 
-	it('should create AudioNode with custom options', () => {
+	it("should create AudioNode with custom options", () => {
 		const node = new MockAudioNode({ numberOfInputs: 2, numberOfOutputs: 3 });
 		assertEquals(node.numberOfInputs, 2);
 		assertEquals(node.numberOfOutputs, 3);
 	});
 
-	it('should connect and disconnect nodes', () => {
+	it("should connect and disconnect nodes", () => {
 		const node1 = new MockAudioNode();
 		const node2 = new MockAudioNode();
 
@@ -216,7 +228,7 @@ describe('AudioNode', () => {
 		expect(node2.inputs.has(node1)).toBe(false);
 	});
 
-	it('should disconnect all outputs', () => {
+	it("should disconnect all outputs", () => {
 		const node1 = new MockAudioNode();
 		const node2 = new MockAudioNode();
 		const node3 = new MockAudioNode();
@@ -231,13 +243,13 @@ describe('AudioNode', () => {
 		expect(node3.inputs.has(node1)).toBe(false);
 	});
 
-	it('should dispose node', () => {
+	it("should dispose node", () => {
 		const node = new MockAudioNode();
 		expect(() => node.dispose()).not.toThrow();
 	});
 });
 
-describe('AudioEncodeNode', () => {
+describe("AudioEncodeNode", () => {
 	let encodeNode: AudioEncodeNode;
 	let mockContext: AudioContext;
 	let mockEncoder: MockAudioEncoder;
@@ -245,9 +257,11 @@ describe('AudioEncodeNode', () => {
 
 	/* TODO: Convert beforeEach */ beforeEach(() => {
 		mockContext = {
-			audioWorklet: { addModule: undefined /* TODO: Convert mock */.mockResolvedValue(undefined) },
+			audioWorklet: {
+				addModule: undefined /* TODO: Convert mock */.mockResolvedValue(undefined),
+			},
 			destination: { channelCount: 2 },
-			sampleRate: 44100
+			sampleRate: 44100,
 		} as any;
 		mockEncoder = new MockAudioEncoder({} as any);
 		mockWorklet = new MockAudioWorkletNode();
@@ -261,14 +275,14 @@ describe('AudioEncodeNode', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('should create AudioEncodeNode', () => {
+	it("should create AudioEncodeNode", () => {
 		assert(encodeNode instanceof AudioEncodeNode);
 		assertEquals(encodeNode.numberOfInputs, 1);
 		assertEquals(encodeNode.numberOfOutputs, 0);
 		assertEquals(encodeNode.context, mockContext);
 	});
 
-	it('should start encoding from worklet stream', async () => {
+	it("should start encoding from worklet stream", async () => {
 		// Simulate worklet sending audio data
 		const audioData = new MockAudioData();
 		const audioDataInit = {
@@ -277,7 +291,7 @@ describe('AudioEncodeNode', () => {
 			numberOfChannels: audioData.numberOfChannels,
 			format: audioData.format,
 			timestamp: audioData.timestamp,
-			data: new Float32Array(audioData.numberOfFrames * audioData.numberOfChannels)
+			data: new Float32Array(audioData.numberOfFrames * audioData.numberOfChannels),
 		};
 		if (mockWorklet.port.onmessage) {
 			mockWorklet.port.onmessage({ data: audioDataInit });
@@ -289,22 +303,22 @@ describe('AudioEncodeNode', () => {
 		}, { timeout: 100 });
 	});
 
-	it('should configure encoder', () => {
+	it("should configure encoder", () => {
 		const config: AudioEncoderConfig = {
-			codec: 'opus',
+			codec: "opus",
 			sampleRate: 44100,
-			numberOfChannels: 2
+			numberOfChannels: 2,
 		};
 
 		expect(() => encodeNode.configure(config)).not.toThrow();
 		expect(mockEncoder.configure).toHaveBeenCalledWith(config);
 	});
 
-	it('should process audio data and encode', () => {
+	it("should process audio data and encode", () => {
 		const config: AudioEncoderConfig = {
-			codec: 'opus',
+			codec: "opus",
 			sampleRate: 44100,
-			numberOfChannels: 2
+			numberOfChannels: 2,
 		};
 		encodeNode.configure(config);
 
@@ -313,78 +327,82 @@ describe('AudioEncodeNode', () => {
 		expect(mockEncoder.encode).toHaveBeenCalledWith(audioData);
 	});
 
-	it('should handle process encode errors gracefully', () => {
+	it("should handle process encode errors gracefully", () => {
 		const audioData = new MockAudioData();
-		mockEncoder.encode.mockImplementationOnce(() => { throw new Error('encode error'); });
+		mockEncoder.encode.mockImplementationOnce(() => {
+			throw new Error("encode error");
+		});
 		expect(() => encodeNode.process(audioData)).not.toThrow();
 	});
 
-	it('should throw error on connect', () => {
+	it("should throw error on connect", () => {
 		const mockDestination = {} as AudioNode;
-		expect(() => encodeNode.connect(mockDestination)).toThrow('AudioEncodeNode does not support connections as it does not output audio');
+		expect(() => encodeNode.connect(mockDestination)).toThrow(
+			"AudioEncodeNode does not support connections as it does not output audio",
+		);
 	});
 
-	it('should not throw on disconnect', () => {
+	it("should not throw on disconnect", () => {
 		expect(() => encodeNode.disconnect()).not.toThrow();
 		expect(() => encodeNode.disconnect(0)).not.toThrow();
 		expect(() => encodeNode.disconnect({} as AudioNode)).not.toThrow();
 	});
 
-	it('should manage event listeners', () => {
+	it("should manage event listeners", () => {
 		const mockListener = undefined /* TODO: Convert mock */;
-		const event = new Event('test');
+		const event = new Event("test");
 
 		// Add listener
-		encodeNode.addEventListener('test', mockListener);
+		encodeNode.addEventListener("test", mockListener);
 		encodeNode.dispatchEvent(event);
 		expect(mockListener).toHaveBeenCalledWith(event);
 
 		// Remove listener
-		encodeNode.removeEventListener('test', mockListener);
+		encodeNode.removeEventListener("test", mockListener);
 		mockListener.mockClear();
 		encodeNode.dispatchEvent(event);
 		expect(mockListener).not.toHaveBeenCalled();
 	});
 
-	it('should handle multiple listeners for same event type', () => {
+	it("should handle multiple listeners for same event type", () => {
 		const mockListener1 = undefined /* TODO: Convert mock */;
 		const mockListener2 = undefined /* TODO: Convert mock */;
-		const event = new Event('test');
+		const event = new Event("test");
 
-		encodeNode.addEventListener('test', mockListener1);
-		encodeNode.addEventListener('test', mockListener2);
+		encodeNode.addEventListener("test", mockListener1);
+		encodeNode.addEventListener("test", mockListener2);
 		encodeNode.dispatchEvent(event);
 
 		expect(mockListener1).toHaveBeenCalledWith(event);
 		expect(mockListener2).toHaveBeenCalledWith(event);
 	});
 
-	it('should handle EventListenerObject', () => {
+	it("should handle EventListenerObject", () => {
 		const mockListener = { handleEvent: undefined /* TODO: Convert mock */ };
-		const event = new Event('test');
+		const event = new Event("test");
 
-		encodeNode.addEventListener('test', mockListener);
+		encodeNode.addEventListener("test", mockListener);
 		encodeNode.dispatchEvent(event);
 
 		expect(mockListener.handleEvent).toHaveBeenCalledWith(event);
 	});
 
-	it('should return correct value from dispatchEvent', () => {
-		const normalEvent = new Event('test');
+	it("should return correct value from dispatchEvent", () => {
+		const normalEvent = new Event("test");
 		class TestEvent extends Event {
 			defaultPrevented = false;
 			preventDefault() {
 				this.defaultPrevented = true;
 			}
 		}
-		const preventedEvent = new TestEvent('test');
+		const preventedEvent = new TestEvent("test");
 		preventedEvent.preventDefault();
 
 		expect(encodeNode.dispatchEvent(normalEvent)).toBe(true);
 		expect(encodeNode.dispatchEvent(preventedEvent)).toBe(false);
 	});
 
-	it('should return correct AudioNode properties', () => {
+	it("should return correct AudioNode properties", () => {
 		assertEquals(encodeNode.numberOfInputs, 1);
 		assertEquals(encodeNode.numberOfOutputs, 0);
 		assertEquals(encodeNode.channelCount, 1);
@@ -392,21 +410,21 @@ describe('AudioEncodeNode', () => {
 		assertEquals(encodeNode.channelInterpretation, "speakers");
 	});
 
-	it('should close encoder on close', async () => {
+	it("should close encoder on close", async () => {
 		await expect(encodeNode.close()).resolves.not.toThrow();
 		expect(mockEncoder.close).toHaveBeenCalled();
 	});
 
-	it('should handle close errors gracefully', async () => {
-		mockEncoder.close.mockRejectedValueOnce(new Error('close error'));
+	it("should handle close errors gracefully", async () => {
+		mockEncoder.close.mockRejectedValueOnce(new Error("close error"));
 		await expect(encodeNode.close()).resolves.not.toThrow();
 	});
 
-	it('should encode to destination and call encode', async () => {
+	it("should encode to destination and call encode", async () => {
 		let resolveDone: () => void;
 		const mockDestination: EncodeDestination = {
 			output: undefined /* TODO: Convert mock */.mockResolvedValue(undefined),
-			done: new Promise(resolve => resolveDone = resolve),
+			done: new Promise((resolve) => resolveDone = resolve),
 		};
 
 		// Add destination first
@@ -427,7 +445,7 @@ describe('AudioEncodeNode', () => {
 	});
 });
 
-describe('AudioDecodeNode', () => {
+describe("AudioDecodeNode", () => {
 	let decoderNode: AudioDecodeNode;
 	let mockContext: AudioContext;
 	let mockDecoder: MockAudioDecoder;
@@ -435,26 +453,28 @@ describe('AudioDecodeNode', () => {
 
 	/* TODO: Convert beforeEach */ beforeEach(() => {
 		mockContext = {
-			audioWorklet: { addModule: undefined /* TODO: Convert mock */.mockResolvedValue(undefined) },
+			audioWorklet: {
+				addModule: undefined /* TODO: Convert mock */.mockResolvedValue(undefined),
+			},
 			destination: { channelCount: 2 },
-			sampleRate: 44100
+			sampleRate: 44100,
 		} as any;
 		mockDecoder = new MockAudioDecoder();
 		mockWorklet = {
-			connect: undefined /* TODO: Convert mock */,
-			disconnect: undefined /* TODO: Convert mock */,
-			addEventListener: undefined /* TODO: Convert mock */,
-			removeEventListener: undefined /* TODO: Convert mock */,
+			connect: undefined, /* TODO: Convert mock */
+			disconnect: undefined, /* TODO: Convert mock */
+			addEventListener: undefined, /* TODO: Convert mock */
+			removeEventListener: undefined, /* TODO: Convert mock */
 			dispatchEvent: undefined /* TODO: Convert mock */.mockReturnValue(false),
 			numberOfInputs: 1,
 			numberOfOutputs: 1,
 			channelCount: 2,
-			port: { postMessage: undefined /* TODO: Convert mock */ }
+			port: { postMessage: undefined /* TODO: Convert mock */ },
 		};
 		(global as any).AudioDecoder = vi.fn(() => mockDecoder);
 		(global as any).AudioWorkletNode = vi.fn(() => mockWorklet);
-		(global as any).AudioNode = function() {};
-		(global as any).AudioParam = function() {};
+		(global as any).AudioNode = function () {};
+		(global as any).AudioParam = function () {};
 
 		decoderNode = new AudioDecodeNode(mockContext);
 	});
@@ -463,41 +483,41 @@ describe('AudioDecodeNode', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('should create AudioDecodeNode', () => {
+	it("should create AudioDecodeNode", () => {
 		assert(decoderNode instanceof AudioDecodeNode);
 		assertEquals(decoderNode.context, mockContext);
 	});
 
-	it('should configure decoder', () => {
+	it("should configure decoder", () => {
 		const config: AudioDecoderConfig = {
-			codec: 'opus',
+			codec: "opus",
 			sampleRate: 44100,
-			numberOfChannels: 2
+			numberOfChannels: 2,
 		};
 
 		decoderNode.configure(config);
 		expect(mockDecoder.configure).toHaveBeenCalledWith(config);
 	});
 
-	it('should connect to AudioNode', () => {
+	it("should connect to AudioNode", () => {
 		const mockDestination = new (global as any).AudioNode();
 		const result = decoderNode.connect(mockDestination);
 		expect(mockWorklet.connect).toHaveBeenCalledWith(mockDestination, undefined, undefined);
 		assertEquals(result, mockDestination);
 	});
 
-	it('should connect to AudioParam', () => {
+	it("should connect to AudioParam", () => {
 		const mockDestination = new (global as any).AudioParam();
 		const result = decoderNode.connect(mockDestination);
 		expect(mockWorklet.connect).toHaveBeenCalledWith(mockDestination, undefined);
 		assertEquals(result, undefined);
 	});
 
-	it('should throw on invalid connect destination', () => {
-		expect(() => decoderNode.connect({} as any)).toThrow('Invalid destination for connect()');
+	it("should throw on invalid connect destination", () => {
+		expect(() => decoderNode.connect({} as any)).toThrow("Invalid destination for connect()");
 	});
 
-	it('should disconnect worklet', () => {
+	it("should disconnect worklet", () => {
 		decoderNode.disconnect();
 		expect(mockWorklet.disconnect).toHaveBeenCalledWith();
 
@@ -512,21 +532,25 @@ describe('AudioDecodeNode', () => {
 		expect(mockWorklet.disconnect).toHaveBeenCalledWith(mockNode, 1);
 	});
 
-	it('should delegate event listeners to worklet', () => {
+	it("should delegate event listeners to worklet", () => {
 		const mockListener = undefined /* TODO: Convert mock */;
-		decoderNode.addEventListener('test', mockListener);
-		expect(mockWorklet.addEventListener).toHaveBeenCalledWith('test', mockListener, undefined);
+		decoderNode.addEventListener("test", mockListener);
+		expect(mockWorklet.addEventListener).toHaveBeenCalledWith("test", mockListener, undefined);
 
-		decoderNode.removeEventListener('test', mockListener);
-		expect(mockWorklet.removeEventListener).toHaveBeenCalledWith('test', mockListener, undefined);
+		decoderNode.removeEventListener("test", mockListener);
+		expect(mockWorklet.removeEventListener).toHaveBeenCalledWith(
+			"test",
+			mockListener,
+			undefined,
+		);
 
-		const event = new Event('test');
+		const event = new Event("test");
 		const result = decoderNode.dispatchEvent(event);
 		expect(mockWorklet.dispatchEvent).toHaveBeenCalledWith(event);
 		assertEquals(result, false); // worklet returns undefined, so false
 	});
 
-	it('should return worklet properties', () => {
+	it("should return worklet properties", () => {
 		assertEquals(decoderNode.numberOfInputs, 1);
 		assertEquals(decoderNode.numberOfOutputs, 1);
 		assertEquals(decoderNode.channelCount, 2);
@@ -534,23 +558,25 @@ describe('AudioDecodeNode', () => {
 		assertEquals(decoderNode.channelInterpretation, "speakers");
 	});
 
-	it('should process AudioData', () => {
+	it("should process AudioData", () => {
 		const audioData = new MockAudioData();
 		expect(() => decoderNode.process(audioData)).not.toThrow();
 		expect(mockWorklet.port.postMessage).toHaveBeenCalled();
 	});
 
-	it('should handle process errors gracefully', () => {
+	it("should handle process errors gracefully", () => {
 		const audioData = new MockAudioData();
-		audioData.close = undefined /* TODO: Convert mock */.mockImplementation(() => { throw new Error('close error'); });
+		audioData.close = undefined /* TODO: Convert mock */.mockImplementation(() => {
+			throw new Error("close error");
+		});
 		expect(() => decoderNode.process(audioData)).not.toThrow();
 	});
 
-	it('should decode from track reader', async () => {
+	it("should decode from track reader", async () => {
 		const config: AudioDecoderConfig = {
-			codec: 'opus',
+			codec: "opus",
 			sampleRate: 44100,
-			numberOfChannels: 2
+			numberOfChannels: 2,
 		};
 		decoderNode.configure(config);
 
@@ -561,11 +587,11 @@ describe('AudioDecodeNode', () => {
 		expect(mockDecoder.decode).toHaveBeenCalled();
 	});
 
-	it('should handle decodeFrom errors gracefully', async () => {
+	it("should handle decodeFrom errors gracefully", async () => {
 		const config: AudioDecoderConfig = {
-			codec: 'opus',
+			codec: "opus",
 			sampleRate: 44100,
-			numberOfChannels: 2
+			numberOfChannels: 2,
 		};
 		decoderNode.configure(config);
 
@@ -575,24 +601,24 @@ describe('AudioDecodeNode', () => {
 		await expect(decoderNode.decodeFrom(mockReader)).resolves.not.toThrow();
 	});
 
-	it('should close decoder on close', async () => {
+	it("should close decoder on close", async () => {
 		await expect(decoderNode.close()).resolves.not.toThrow();
 		expect(mockDecoder.flush).toHaveBeenCalled();
 		expect(mockDecoder.close).toHaveBeenCalled();
 	});
 
-	it('should handle flush errors gracefully', async () => {
-		mockDecoder.flush.mockRejectedValueOnce(new Error('flush error'));
+	it("should handle flush errors gracefully", async () => {
+		mockDecoder.flush.mockRejectedValueOnce(new Error("flush error"));
 		await expect(decoderNode.flush()).resolves.not.toThrow();
 	});
 
-	it('should handle close errors gracefully', async () => {
-		mockDecoder.flush.mockRejectedValueOnce(new Error('flush error'));
-		mockDecoder.close.mockRejectedValueOnce(new Error('close error'));
+	it("should handle close errors gracefully", async () => {
+		mockDecoder.flush.mockRejectedValueOnce(new Error("flush error"));
+		mockDecoder.close.mockRejectedValueOnce(new Error("close error"));
 		await expect(decoderNode.close()).resolves.not.toThrow();
 	});
 
-	it('should dispose node', () => {
+	it("should dispose node", () => {
 		expect(() => decoderNode.dispose()).not.toThrow();
 		expect(mockWorklet.disconnect).toHaveBeenCalled();
 	});
