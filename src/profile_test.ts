@@ -1,9 +1,9 @@
 import { Profile, ProfileInit } from "./profile.ts";
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
+import { assertEquals, assert } from "@std/assert";
 
-describe("Profile", () => {
-    describe("Constructor", () => {
-        test("creates profile with required id", () => {
+Deno.test("Profile", async (t) => {
+    await t.step("Constructor", async (t) => {
+        await t.step("creates profile with required id", () => {
             const init: ProfileInit = {
                 id: "user123"
             };
@@ -13,7 +13,7 @@ describe("Profile", () => {
             assertEquals(profile.id, "user123");
         });
 
-        test("creates profile with different id", () => {
+        await t.step("creates profile with different id", () => {
             const init: ProfileInit = {
                 id: "another-user-456"
             };
@@ -23,7 +23,7 @@ describe("Profile", () => {
             assertEquals(profile.id, "another-user-456");
         });
 
-        test("id is readonly", () => {
+        await t.step("id is readonly", () => {
             const profile = new Profile({ id: "test-id" });
 
             // This would cause TypeScript error if we tried to assign
@@ -32,20 +32,20 @@ describe("Profile", () => {
             assertEquals(profile.id, "test-id");
         });
 
-        test("handles empty string id", () => {
+        await t.step("handles empty string id", () => {
             const profile = new Profile({ id: "" });
 
             assertEquals(profile.id, "");
         });
 
-        test("handles special characters in id", () => {
+        await t.step("handles special characters in id", () => {
             const specialId = "user@domain.com_123-test!";
             const profile = new Profile({ id: specialId });
 
             assertEquals(profile.id, specialId);
         });
 
-        test("handles very long id", () => {
+        await t.step("handles very long id", () => {
             const longId = "a".repeat(1000);
             const profile = new Profile({ id: longId });
 
@@ -53,8 +53,8 @@ describe("Profile", () => {
         });
     });
 
-    describe("Properties", () => {
-        test("id property is accessible", () => {
+    await t.step("Properties", async (t) => {
+        await t.step("id property is accessible", () => {
             const profile = new Profile({ id: "accessible-id" });
 
             const profileId = profile.id;
@@ -62,7 +62,7 @@ describe("Profile", () => {
             assertEquals(profileId, "accessible-id");
         });
 
-        test("profile maintains identity", () => {
+        await t.step("profile maintains identity", () => {
             const id = "identity-test";
             const profile = new Profile({ id });
 
@@ -71,8 +71,8 @@ describe("Profile", () => {
         });
     });
 
-    describe("Type Safety", () => {
-        test("ProfileInit interface requires id", () => {
+    await t.step("Type Safety", async (t) => {
+        await t.step("ProfileInit interface requires id", () => {
             // This test ensures the interface contract is working
             const validInit: ProfileInit = { id: "test" };
             const profile = new Profile(validInit);
@@ -80,7 +80,7 @@ describe("Profile", () => {
             assert(profile instanceof Profile);
         });
 
-        test("Profile instance type checking", () => {
+        await t.step("Profile instance type checking", () => {
             const profile = new Profile({ id: "type-check" });
 
             assert(profile instanceof Profile);
@@ -88,20 +88,20 @@ describe("Profile", () => {
         });
     });
 
-    describe("Edge Cases", () => {
-        test("handles whitespace-only id", () => {
+    await t.step("Edge Cases", async (t) => {
+        await t.step("handles whitespace-only id", () => {
             const profile = new Profile({ id: "   \t\n   " });
 
             assertEquals(profile.id, "   \t\n   ");
         });
 
-        test("handles numeric string id", () => {
+        await t.step("handles numeric string id", () => {
             const profile = new Profile({ id: "12345" });
 
             assertEquals(profile.id, "12345");
         });
 
-        test("handles unicode characters", () => {
+        await t.step("handles unicode characters", () => {
             const unicodeId = "用户123_测试_🎉";
             const profile = new Profile({ id: unicodeId });
 
@@ -109,8 +109,8 @@ describe("Profile", () => {
         });
     });
 
-    describe("Multiple Instances", () => {
-        test("different profiles have different ids", () => {
+    await t.step("Multiple Instances", async (t) => {
+        await t.step("different profiles have different ids", () => {
             const profile1 = new Profile({ id: "user1" });
             const profile2 = new Profile({ id: "user2" });
 
@@ -119,7 +119,7 @@ describe("Profile", () => {
             assert(profile1.id !== profile2.id);
         });
 
-        test("profiles with same id are equal by value", () => {
+        await t.step("profiles with same id are equal by value", () => {
             const profile1 = new Profile({ id: "same-id" });
             const profile2 = new Profile({ id: "same-id" });
 
@@ -127,7 +127,7 @@ describe("Profile", () => {
             assert(profile1 !== profile2); // Different object references
         });
 
-        test("can create multiple profiles", () => {
+        await t.step("can create multiple profiles", () => {
             const profiles = [
                 new Profile({ id: "user1" }),
                 new Profile({ id: "user2" }),
