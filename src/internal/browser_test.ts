@@ -1,4 +1,4 @@
-import { isChrome, isFirefox } from './browser.js.ts';
+import { isChrome, isFirefox } from './browser.ts';
 import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
 
 

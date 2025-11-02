@@ -27,8 +27,8 @@ describe('Volume', () => {
         delete (globalThis as any).__DEFAULT_MIN_GAIN__;
         delete (globalThis as any).__DEFAULT_FADE_TIME__;
 
-        // Mock console.warn
-        consoleWarnSpy = /* TODO: Convert spy */ undefined(console, 'warn').mockImplementation(() => {});
+        // TODO: Mock console.warn - needs manual conversion
+        // consoleWarnSpy = ...; // Vitest spy removed - implement with Deno mocking library if needed
 
         // Set up global mocks for Web Audio API
         setupGlobalMocks();
