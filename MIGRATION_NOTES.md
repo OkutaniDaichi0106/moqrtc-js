@@ -19,16 +19,19 @@ This document describes the migration from Node.js + pnpm to Deno runtime and li
   - `zod` → `https://esm.sh/zod@3.23.8`
   - `@okutanidaichi/moqt` → `./src/test-stubs/moqt.ts`
 
-### ✅ Test Files
+### ✅ Test Files (8/31 Complete - 26%)
 - Renamed all test files from `*.test.ts` to `*_test.ts` (31 files)
 - Replaced `vitest` imports with `@std/assert`
-- Converted most `expect()` assertions to Deno assertion functions:
-  - `expect(x).toBe(y)` → `assertEquals(x, y)`
-  - `expect(x).toEqual(y)` → `assertEquals(x, y)`
-  - `expect(x).toBeTruthy()` → `assert(x)`
-  - `expect(x).toBeDefined()` → `assertExists(x)`
-  - `expect(x).toThrow()` → `assertThrows(() => x)`
-  - And more...
+- Converted `expect()` assertions to Deno assertion functions
+- **Fully converted test files:**
+  - ✅ `src/profile_test.ts` - Example conversion
+  - ✅ `src/internal/browser_test.ts` - Simple browser detection
+  - ✅ `src/internal/error_test.ts` - Error constants with table-driven tests
+  - ✅ `src/catalog/descriptors/profile_test.ts` - Schema validation
+  - ✅ `src/catalog/descriptors/captions_test.ts` - Captions descriptor
+  - ✅ `src/catalog/descriptors/timeseries_test.ts` - Timeseries with Map
+  - ✅ `src/catalog/descriptors/audio_test.ts` - Audio schema validation
+  - ✅ `src/catalog/descriptors/video_test.ts` - Video schema validation
 
 ### ✅ Documentation
 - Updated README.md with Deno installation instructions
@@ -43,11 +46,13 @@ This document describes the migration from Node.js + pnpm to Deno runtime and li
 - Removed `.prettierrc.json`
 - Removed `.npmrc` and `.npmignore`
 
-## Manual Work Required
+## Remaining Work (23/31 tests - 74%)
 
-### 🔴 Test Structure Conversion
+### 🟡 Test Structure Conversion In Progress
 
-Test files still use Vitest's `describe`/`test`/`it` structure. These need to be converted to Deno's `Deno.test()` format.
+23 test files still need conversion from Vitest's `describe`/`test`/`it` to Deno's `Deno.test()` format.
+
+**Conversion guidelines available in:** `.github/prompts/deno-test.prompt.md`
 
 **Before (Vitest):**
 ```typescript
@@ -76,9 +81,17 @@ Deno.test("MyClass", async (t) => {
 });
 ```
 
-**Files affected:** All 31 `*_test.ts` files (1 already converted: `src/profile_test.ts`)
+**Files remaining (23):**
+- Internal: 10 files (complex with mocking and worklet code)
+- Catalog: 4 files (integers, track, container, init)
+- Media: 4 files (camera, device, microphone, screen)
+- Elements: 1 file (room)
+- Root: 4 files (broadcast, room, test-utils, volume)
 
-**Example:** See `src/profile_test.ts` for a fully converted test file that demonstrates the pattern.
+**Examples:** See converted test files listed above for patterns:
+- Simple tests: `src/internal/browser_test.ts`
+- Table-driven: `src/internal/error_test.ts`
+- Schema validation: `src/catalog/descriptors/*.ts`
 
 ### 🔴 Mock Functions
 
