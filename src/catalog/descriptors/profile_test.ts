@@ -1,6 +1,5 @@
+import { assertEquals } from "@std/assert";
 import { ProfileTrackSchema } from './profile.ts';
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
-
 
 const createValidDescriptor = () => ({
 	name: 'profile-user',
@@ -11,14 +10,14 @@ const createValidDescriptor = () => ({
 	},
 });
 
-describe('ProfileTrackSchema', () => {
-	test('accepts valid profile descriptor', () => {
+Deno.test("ProfileTrackSchema", async (t) => {
+	await t.step("accepts valid profile descriptor", () => {
 		const parsed = ProfileTrackSchema.parse(createValidDescriptor());
 
 		assertEquals(parsed.config.id, 'user-profile');
 	});
 
-	test('requires config.id to be present', () => {
+	await t.step("requires config.id to be present", () => {
 		const result = ProfileTrackSchema.safeParse({
 			...createValidDescriptor(),
 			config: {},
@@ -27,7 +26,7 @@ describe('ProfileTrackSchema', () => {
 		assertEquals(result.success, false);
 	});
 
-	test('rejects descriptors with incorrect schema literal', () => {
+	await t.step("rejects descriptors with incorrect schema literal", () => {
 		const result = ProfileTrackSchema.safeParse({
 			...createValidDescriptor(),
 			schema: 'profile-custom',

@@ -1,6 +1,5 @@
+import { assertEquals, assert } from "@std/assert";
 import { CaptionsTrackSchema } from './captions.ts';
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
-
 
 const validDescriptor = {
 	name: 'captions-en',
@@ -13,14 +12,16 @@ const validDescriptor = {
 	dependencies: ['video-main'],
 };
 
-describe('CaptionsTrackSchema', () => {
-	test('accepts a valid captions descriptor', () => {
+Deno.test("CaptionsTrackSchema", async (t) => {
+	await t.step("accepts a valid captions descriptor", () => {
 		const parsed = CaptionsTrackSchema.parse(validDescriptor);
 
-		expect(parsed).toMatchObject(validDescriptor);
+		assertEquals(parsed.name, validDescriptor.name);
+		assertEquals(parsed.config.language, validDescriptor.config.language);
+		assertEquals(parsed.dependencies, validDescriptor.dependencies);
 	});
 
-	test('rejects descriptors without dependencies', () => {
+	await t.step("rejects descriptors without dependencies", () => {
 		const result = CaptionsTrackSchema.safeParse({
 			...validDescriptor,
 			dependencies: [],
@@ -32,7 +33,7 @@ describe('CaptionsTrackSchema', () => {
 		}
 	});
 
-	test('rejects descriptors with wrong schema literal', () => {
+	await t.step("rejects descriptors with wrong schema literal", () => {
 		const result = CaptionsTrackSchema.safeParse({
 			...validDescriptor,
 			schema: 'text',

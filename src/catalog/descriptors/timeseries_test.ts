@@ -1,6 +1,5 @@
+import { assertEquals, assert } from "@std/assert";
 import { TimeseriesTrackSchema } from './timeseries.ts';
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
-
 
 const createMeasurements = () => new Map([
 	['temperature', {
@@ -22,20 +21,20 @@ const createValidDescriptor = () => ({
 	dependencies: ['sensor-stream'],
 });
 
-describe('TimeseriesTrackSchema', () => {
-	test('accepts a valid timeseries descriptor', () => {
+Deno.test("TimeseriesTrackSchema", async (t) => {
+	await t.step("accepts a valid timeseries descriptor", () => {
 		const parsed = TimeseriesTrackSchema.parse(createValidDescriptor());
+		const temp = parsed.config.measurements.get('temperature');
 
-		expect(parsed.config.measurements.get('temperature')).toMatchObject({
-			type: 'temperature',
-			unit: 'celsius',
-			interval: 1,
-			min: 0,
-			max: 100,
-		});
+		assert(temp);
+		assertEquals(temp.type, 'temperature');
+		assertEquals(temp.unit, 'celsius');
+		assertEquals(temp.interval, 1);
+		assertEquals(temp.min, 0);
+		assertEquals(temp.max, 100);
 	});
 
-	test('rejects descriptors with non-map measurements', () => {
+	await t.step("rejects descriptors with non-map measurements", () => {
 		const result = TimeseriesTrackSchema.safeParse({
 			...createValidDescriptor(),
 			config: {
@@ -46,7 +45,7 @@ describe('TimeseriesTrackSchema', () => {
 		assertEquals(result.success, false);
 	});
 
-	test('rejects measurements with invalid interval', () => {
+	await t.step("rejects measurements with invalid interval", () => {
 		const invalidMeasurements = new Map([
 			['temperature', {
 				type: 'temperature',
