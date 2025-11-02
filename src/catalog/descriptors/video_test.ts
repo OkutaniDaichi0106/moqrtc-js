@@ -1,14 +1,14 @@
+import { assertEquals, assert, assertThrows } from "@std/assert";
 import { VideoConfigSchema, VideoTrackSchema } from "./video.ts";
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
 
 const baseConfig = {
     codec: "avc1.640028",
     container: "cmaf" as const,
 };
 
-describe("Video descriptors", () => {
-    describe("VideoConfigSchema", () => {
-        test("parses valid config with hex string description and defaults", () => {
+Deno.test("Video descriptors", async (t) => {
+    await t.step("VideoConfigSchema", async (t) => {
+        await t.step("parses valid config with hex string description and defaults", () => {
             const config = VideoConfigSchema.parse({
                 ...baseConfig,
                 description: "00010203",
@@ -19,13 +19,13 @@ describe("Video descriptors", () => {
             });
 
             assert(config.description instanceof Uint8Array);
-            expect(Array.from(config.description!)).toEqual([0, 1, 2, 3]);
+            assertEquals(Array.from(config.description!), [0, 1, 2, 3]);
             assertEquals(config.optimizeForLatency, true); // default applied
             assertEquals(config.rotation, 0); // default applied
             assertEquals(config.flip, false); // default applied
         });
 
-        test("keeps Uint8Array description untouched", () => {
+        await t.step("keeps Uint8Array description untouched", () => {
             const description = new Uint8Array([255, 0, 127]);
             const config = VideoConfigSchema.parse({
                 ...baseConfig,
@@ -35,16 +35,18 @@ describe("Video descriptors", () => {
             assertEquals(config.description, description);
         });
 
-        test("rejects invalid hex string in description", () => {
-            expect(() =>
+        await t.step("rejects invalid hex string in description", () => {
+            assertThrows(() =>
                 VideoConfigSchema.parse({
                     ...baseConfig,
                     description: "not-hex",
-                })
-            ).toThrow("Invalid hex string");
+                }),
+                Error,
+                "Invalid hex string"
+            );
         });
 
-        test("rejects invalid container values", () => {
+        await t.step("rejects invalid container values", () => {
             const result = VideoConfigSchema.safeParse({
                 ...baseConfig,
                 container: "mp4",
@@ -58,8 +60,8 @@ describe("Video descriptors", () => {
         });
     });
 
-    describe("VideoTrackSchema", () => {
-        test("parses complete video track descriptor", () => {
+    await t.step("VideoTrackSchema", async (t) => {
+        await t.step("parses complete video track descriptor", () => {
             const descriptor = VideoTrackSchema.parse({
                 name: "video-main",
                 priority: 0,
@@ -79,13 +81,13 @@ describe("Video descriptors", () => {
             });
 
             assertEquals(descriptor.schema, "video");
-            expect(Array.from(descriptor.config.description!)).toEqual([202, 254, 186, 190]);
+            assertEquals(Array.from(descriptor.config.description!), [202, 254, 186, 190]);
             assertEquals(descriptor.config.optimizeForLatency, false);
             assertEquals(descriptor.config.rotation, 90);
             assertEquals(descriptor.config.flip, true);
         });
 
-        test("enforces video schema literal", () => {
+        await t.step("enforces video schema literal", () => {
             const result = VideoTrackSchema.safeParse({
                 name: "video-secondary",
                 priority: 5,

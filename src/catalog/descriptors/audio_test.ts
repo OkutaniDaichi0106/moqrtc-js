@@ -1,5 +1,5 @@
+import { assertEquals, assert, assertThrows } from "@std/assert";
 import { AudioConfigSchema, AudioTrackSchema } from "./audio.ts";
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
 
 const baseConfig = {
     codec: "opus",
@@ -8,9 +8,9 @@ const baseConfig = {
     container: "loc" as const,
 };
 
-describe("Audio descriptors", () => {
-    describe("AudioConfigSchema", () => {
-        test("parses valid config with hex string description", () => {
+Deno.test("Audio descriptors", async (t) => {
+    await t.step("AudioConfigSchema", async (t) => {
+        await t.step("parses valid config with hex string description", () => {
             const result = AudioConfigSchema.parse({
                 ...baseConfig,
                 description: "48656c6c6f", // "Hello" in hex
@@ -19,11 +19,11 @@ describe("Audio descriptors", () => {
 
             assertEquals(result.codec, "opus");
             assert(result.description instanceof Uint8Array);
-            expect(Array.from(result.description!)).toEqual([72, 101, 108, 108, 111]);
+            assertEquals(Array.from(result.description!), [72, 101, 108, 108, 111]);
             assertEquals(result.bitrate, 96_000);
         });
 
-        test("parses config with Uint8Array description", () => {
+        await t.step("parses config with Uint8Array description", () => {
             const description = new Uint8Array([1, 2, 3]);
             const result = AudioConfigSchema.parse({
                 ...baseConfig,
@@ -33,16 +33,18 @@ describe("Audio descriptors", () => {
             assertEquals(result.description, description);
         });
 
-        test("rejects invalid hex string description", () => {
-            expect(() =>
+        await t.step("rejects invalid hex string description", () => {
+            assertThrows(() =>
                 AudioConfigSchema.parse({
                     ...baseConfig,
                     description: "invalid-hex",
-                })
-            ).toThrow("Invalid hex string");
+                }),
+                Error,
+                "Invalid hex string"
+            );
         });
 
-        test("rejects invalid container values", () => {
+        await t.step("rejects invalid container values", () => {
             const result = AudioConfigSchema.safeParse({
                 ...baseConfig,
                 container: "mp4",
@@ -56,8 +58,8 @@ describe("Audio descriptors", () => {
         });
     });
 
-    describe("AudioTrackSchema", () => {
-        test("parses complete audio track descriptor", () => {
+    await t.step("AudioTrackSchema", async (t) => {
+        await t.step("parses complete audio track descriptor", () => {
             const descriptor = AudioTrackSchema.parse({
                 name: "audio-main",
                 priority: 1,
@@ -71,11 +73,11 @@ describe("Audio descriptors", () => {
 
             assertEquals(descriptor.schema, "audio");
             assert(descriptor.config.description instanceof Uint8Array);
-            expect(Array.from(descriptor.config.description!)).toEqual([0, 17, 34]);
+            assertEquals(Array.from(descriptor.config.description!), [0, 17, 34]);
             assertEquals(descriptor.dependencies, ["catalog"]);
         });
 
-        test("enforces audio schema literal", () => {
+        await t.step("enforces audio schema literal", () => {
             const result = AudioTrackSchema.safeParse({
                 name: "audio-secondary",
                 priority: 2,
