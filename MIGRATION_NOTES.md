@@ -19,7 +19,7 @@ This document describes the migration from Node.js + pnpm to Deno runtime and li
   - `zod` → `https://esm.sh/zod@3.23.8`
   - `@okutanidaichi/moqt` → `./src/test-stubs/moqt.ts`
 
-### ✅ Test Files (8/31 Complete - 26%)
+### ✅ Test Files (9/31 Complete - 29%)
 - Renamed all test files from `*.test.ts` to `*_test.ts` (31 files)
 - Replaced `vitest` imports with `@std/assert`
 - Converted `expect()` assertions to Deno assertion functions
@@ -32,6 +32,7 @@ This document describes the migration from Node.js + pnpm to Deno runtime and li
   - ✅ `src/catalog/descriptors/timeseries_test.ts` - Timeseries with Map
   - ✅ `src/catalog/descriptors/audio_test.ts` - Audio schema validation
   - ✅ `src/catalog/descriptors/video_test.ts` - Video schema validation
+  - ✅ `src/catalog/container_test.ts` - Container enum validation with comprehensive testing
 
 ### ✅ Documentation
 - Updated README.md with Deno installation instructions
@@ -46,7 +47,7 @@ This document describes the migration from Node.js + pnpm to Deno runtime and li
 - Removed `.prettierrc.json`
 - Removed `.npmrc` and `.npmignore`
 
-## Remaining Work (23/31 tests - 74%)
+## Remaining Work (22/31 tests - 71%)
 
 ### 🟡 Test Structure Conversion In Progress
 
@@ -81,9 +82,9 @@ Deno.test("MyClass", async (t) => {
 });
 ```
 
-**Files remaining (23):**
+**Files remaining (22):**
 - Internal: 10 files (complex with mocking and worklet code)
-- Catalog: 4 files (integers, track, container, init)
+- Catalog: 3 files (integers - 792 lines, track - 459 lines, init - 301 lines)
 - Media: 4 files (camera, device, microphone, screen)
 - Elements: 1 file (room)
 - Root: 4 files (broadcast, room, test-utils, volume)

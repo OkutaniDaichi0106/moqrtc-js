@@ -1,10 +1,10 @@
-import { ContainerSchema } from './container.ts';
+import { assertEquals, assert, assertThrows } from "@std/assert";
 import { z } from 'zod';
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
+import { ContainerSchema } from './container.ts';
 
-describe('Container', () => {
-    describe('ContainerSchema', () => {
-        test('accepts valid container types', () => {
+Deno.test('Container', async (t) => {
+    await t.step('ContainerSchema', async (t) => {
+        await t.step('accepts valid container types', () => {
             const validContainers = ['loc', 'cmaf'];
 
             validContainers.forEach(container => {
@@ -16,7 +16,7 @@ describe('Container', () => {
             });
         });
 
-        test('rejects invalid container types', () => {
+        await t.step('rejects invalid container types', () => {
             const invalidContainers = [
                 'mp4',
                 'webm',
@@ -42,7 +42,7 @@ describe('Container', () => {
             });
         });
 
-        test('rejects non-string values', () => {
+        await t.step('rejects non-string values', () => {
             const nonStringValues = [
                 123,
                 true,
@@ -67,7 +67,7 @@ describe('Container', () => {
             });
         });
 
-        test('provides correct error messages for invalid enum values', () => {
+        await t.step('provides correct error messages for invalid enum values', () => {
             const result = ContainerSchema.safeParse('invalid');
             assertEquals(result.success, false);
             
@@ -80,7 +80,7 @@ describe('Container', () => {
             }
         });
 
-        test('provides correct error messages for wrong types', () => {
+        await t.step('provides correct error messages for wrong types', () => {
             const result = ContainerSchema.safeParse(123);
             assertEquals(result.success, false);
             
@@ -93,21 +93,22 @@ describe('Container', () => {
             }
         });
 
-        test('works with parse method for valid values', () => {
-            expect(() => ContainerSchema.parse('loc')).not.toThrow();
-            expect(() => ContainerSchema.parse('cmaf')).not.toThrow();
+        await t.step('works with parse method for valid values', () => {
+            // Should not throw
+            ContainerSchema.parse('loc');
+            ContainerSchema.parse('cmaf');
             
-            expect(ContainerSchema.parse('loc')).toBe('loc');
-            expect(ContainerSchema.parse('cmaf')).toBe('cmaf');
+            assertEquals(ContainerSchema.parse('loc'), 'loc');
+            assertEquals(ContainerSchema.parse('cmaf'), 'cmaf');
         });
 
-        test('throws with parse method for invalid values', () => {
-            expect(() => ContainerSchema.parse('invalid')).toThrow(z.ZodError);
-            expect(() => ContainerSchema.parse(123)).toThrow(z.ZodError);
-            expect(() => ContainerSchema.parse('')).toThrow(z.ZodError);
+        await t.step('throws with parse method for invalid values', () => {
+            assertThrows(() => ContainerSchema.parse('invalid'), z.ZodError);
+            assertThrows(() => ContainerSchema.parse(123), z.ZodError);
+            assertThrows(() => ContainerSchema.parse(''), z.ZodError);
         });
 
-        test('schema has correct type definition', () => {
+        await t.step('schema has correct type definition', () => {
             // Type-level test - this should compile without errors
             const validValue: z.infer<typeof ContainerSchema> = 'loc';
             assertEquals(validValue, 'loc');
@@ -117,7 +118,7 @@ describe('Container', () => {
             assertEquals(containerType, 'cmaf');
         });
 
-        test('schema properties and metadata', () => {
+        await t.step('schema properties and metadata', () => {
             assert(ContainerSchema instanceof z.ZodEnum);
             // Test enum options indirectly through parsing
             assert(ContainerSchema.options.includes('loc'));
@@ -125,7 +126,7 @@ describe('Container', () => {
             assertEquals(ContainerSchema.options.length, 2);
         });
 
-        test('handles edge cases', () => {
+        await t.step('handles edge cases', () => {
             // Empty string
             const emptyResult = ContainerSchema.safeParse('');
             assertEquals(emptyResult.success, false);
@@ -139,7 +140,7 @@ describe('Container', () => {
             assertEquals(unicodeResult.success, false);
         });
 
-        test('integration with complex objects', () => {
+        await t.step('integration with complex objects', () => {
             const testObject = {
                 container: 'loc' as const,
                 otherField: 'value'
@@ -152,7 +153,7 @@ describe('Container', () => {
             }
         });
 
-        test('array of containers validation', () => {
+        await t.step('array of containers validation', () => {
             const containers = ['loc', 'cmaf'];
             const arraySchema = z.array(ContainerSchema);
             
@@ -167,29 +168,29 @@ describe('Container', () => {
             assertEquals(invalidResult.success, false);
         });
 
-        test('optional container schema', () => {
+        await t.step('optional container schema', () => {
             const optionalSchema = ContainerSchema.optional();
             
-            expect(optionalSchema.safeParse('loc').success).toBe(true);
-            expect(optionalSchema.safeParse('cmaf').success).toBe(true);
-            expect(optionalSchema.safeParse(undefined).success).toBe(true);
-            expect(optionalSchema.safeParse('invalid').success).toBe(false);
+            assert(optionalSchema.safeParse('loc').success);
+            assert(optionalSchema.safeParse('cmaf').success);
+            assert(optionalSchema.safeParse(undefined).success);
+            assert(!optionalSchema.safeParse('invalid').success);
         });
 
-        test('nullable container schema', () => {
+        await t.step('nullable container schema', () => {
             const nullableSchema = ContainerSchema.nullable();
             
-            expect(nullableSchema.safeParse('loc').success).toBe(true);
-            expect(nullableSchema.safeParse('cmaf').success).toBe(true);
-            expect(nullableSchema.safeParse(null).success).toBe(true);
-            expect(nullableSchema.safeParse('invalid').success).toBe(false);
+            assert(nullableSchema.safeParse('loc').success);
+            assert(nullableSchema.safeParse('cmaf').success);
+            assert(nullableSchema.safeParse(null).success);
+            assert(!nullableSchema.safeParse('invalid').success);
         });
 
-        test('default value with container schema', () => {
+        await t.step('default value with container schema', () => {
             const schemaWithDefault = ContainerSchema.default('loc');
             
-            expect(schemaWithDefault.parse('cmaf')).toBe('cmaf');
-            expect(schemaWithDefault.parse(undefined)).toBe('loc');
+            assertEquals(schemaWithDefault.parse('cmaf'), 'cmaf');
+            assertEquals(schemaWithDefault.parse(undefined), 'loc');
         });
     });
 });
