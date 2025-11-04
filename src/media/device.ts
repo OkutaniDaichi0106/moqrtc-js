@@ -205,7 +205,10 @@ export class Device {
 			// ensure any partial stream is stopped
 			try {
 				stream?.getTracks().forEach((t) => t.stop());
-			} catch {}
+			} catch {
+				// ignore
+				// TODO: consider logging
+			}
 			return undefined;
 		} finally {
 			clearTimeout(timeoutId);

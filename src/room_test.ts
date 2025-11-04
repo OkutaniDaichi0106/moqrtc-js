@@ -80,10 +80,10 @@ const importUrl = createMockFunction().mockReturnValue("mock-url");
 	value: BroadcastSubscriber,
 });
 
-(Object as any).defineProperty(await import("./internal/audio_hijack_worklet.ts"), "importWorkletUrl", {
+(Object as any).defineProperty(await import("./internal/audio/audio_hijack_worklet.ts"), "importWorkletUrl", {
 	value: importWorkletUrl,
 });
-(Object as any).defineProperty(await import("./internal/audio_offload_worklet.ts"), "importUrl", {
+(Object as any).defineProperty(await import("./internal/audio/audio_offload_worklet.ts"), "importUrl", {
 	value: importUrl,
 });
 
