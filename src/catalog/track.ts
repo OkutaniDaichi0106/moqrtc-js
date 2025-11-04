@@ -1,6 +1,4 @@
-import { z } from "zod"
-import { uint8Schema, uint62Schema } from "./integers.ts"
-import { ContainerSchema } from "./container.ts"
+import { z } from "zod";
 
 export const TrackDescriptorSchema = z.object({
 	name: z.string().min(1),
@@ -16,22 +14,22 @@ export const TrackDescriptorsSchema = z.array(TrackDescriptorSchema);
 export type TrackDescriptor = z.infer<typeof TrackDescriptorSchema>;
 
 export const ActiveTrackSchema = z.object({
-    active: z.literal(true),
-    track: TrackDescriptorSchema,
-})
+	active: z.literal(true),
+	track: TrackDescriptorSchema,
+});
 
 export type ActiveTrackLine = z.infer<typeof ActiveTrackSchema>;
 
 export const EndedTrackSchema = z.object({
-    active: z.literal(false),
-    name: z.string(),
-})
+	active: z.literal(false),
+	name: z.string(),
+});
 
 export type EndedTrackSchema = z.infer<typeof EndedTrackSchema>;
 
 export const CatalogLineSchema = z.union([
-    ActiveTrackSchema,
-    EndedTrackSchema,
+	ActiveTrackSchema,
+	EndedTrackSchema,
 ]);
 
 export type CatalogLine = z.infer<typeof CatalogLineSchema>;

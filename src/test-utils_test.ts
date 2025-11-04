@@ -1,114 +1,68 @@
 // Common test utilities and mocks for hang-web tests
 
-// Mock canvas context
-export const mockCanvasContext = {
-    clearRect: undefined /* TODO: Convert mock */,
-    drawImage: undefined /* TODO: Convert mock */,
-    fillText: undefined /* TODO: Convert mock */,
-    fillStyle: '',
-    font: '',
-    textAlign: 'left' as CanvasTextAlign,
-    textBaseline: 'top' as CanvasTextBaseline
-};
+import { mockAudioContextClose, mockAudioWorkletAddModule } from "./mock_audio_context_test.ts";
+import { mockAudioWorkletNode, mockWorkletConnect, mockWorkletDisconnect, mockWorkletPort } from "./mock_audio_worklet_node_test.ts";
+import { mockCanvas, mockCanvasContext } from "./mock_canvas_test.ts";
+import { MockGainNode, mockGainNodeConnect, mockGainNodeDisconnect } from "./mock_gain_node_test.ts";
+import { mockVideo } from "./mock_video_test.ts";
 
-// Mock canvas element
-export const mockCanvas = {
-    getContext: vi.fn((contextType: string) => {
-        if (contextType === '2d') {
-            return mockCanvasContext;
-        }
-        return null;
-    }),
-    width: 320,
-    height: 240
-};
-
-// Mock video element
-export const mockVideo = {
-    readyState: 0,
-    videoWidth: 640,
-    videoHeight: 480,
-    currentTime: 0,
-    duration: 0,
-    paused: true,
-    play: undefined /* TODO: Convert mock */.mockResolvedValue(undefined),
-    pause: undefined /* TODO: Convert mock */,
-    addEventListener: undefined /* TODO: Convert mock */,
-    removeEventListener: undefined /* TODO: Convert mock */
-};
-
-// Mock audio context
-export const mockAudioWorkletAddModule = undefined /* TODO: Convert mock */.mockResolvedValue(undefined);
-export const mockAudioContextClose = undefined /* TODO: Convert mock */.mockResolvedValue(undefined);
-
-export const mockAudioContext = {
-    audioWorklet: {
-        addModule: mockAudioWorkletAddModule
-    },
-    get currentTime() { return this._currentTime || 0; },
-    set currentTime(value: number) { this._currentTime = value; },
-    _currentTime: 0,
-    sampleRate: 44100,
-    destination: {},
-    close: mockAudioContextClose
-};
-
-// Mock gain node - simplified to only provide GainNode interface
-export const mockGainNodeConnect = undefined /* TODO: Convert mock */;
-export const mockGainNodeDisconnect = undefined /* TODO: Convert mock */;
-
-export class MockGainNode {
-    connect = mockGainNodeConnect;
-    disconnect = mockGainNodeDisconnect;
-    gain: { value: number; cancelScheduledValues: any; setValueAtTime: any; exponentialRampToValueAtTime: any };
-    context: any;
-
-    constructor(audioContext?: any, options?: any) {
-        this.gain = {
-            value: options?.gain ?? 0.5,
-            cancelScheduledValues: undefined /* TODO: Convert mock */,
-            setValueAtTime: vi.fn((value: number) => {
-                // For testing, immediately set the gain value
-                this.gain.value = value;
-            }),
-            exponentialRampToValueAtTime: vi.fn((value: number) => {
-                // For testing, immediately set the gain value
-                this.gain.value = value;
-            })
-        };
-        this.context = audioContext || { currentTime: 0 };
-    }
-}
-
-export const mockGainNode = new MockGainNode();
-
-// Mock audio worklet node
-export const mockWorkletConnect = undefined /* TODO: Convert mock */;
-export const mockWorkletDisconnect = undefined /* TODO: Convert mock */;
-export const mockWorkletPort = {
-    postMessage: undefined /* TODO: Convert mock */
-};
-
-export const mockAudioWorkletNode = {
-    connect: mockWorkletConnect,
-    disconnect: mockWorkletDisconnect,
-    port: mockWorkletPort
-};
+// Re-export mocks for convenience
+export { mockAudioContext, mockAudioContextClose, mockAudioWorkletAddModule } from "./mock_audio_context_test.ts";
+export { mockAudioWorkletNode, mockWorkletConnect, mockWorkletDisconnect, mockWorkletPort } from "./mock_audio_worklet_node_test.ts";
+export { mockCanvas, mockCanvasContext } from "./mock_canvas_test.ts";
+export { MockGainNode, mockGainNode, mockGainNodeConnect, mockGainNodeDisconnect } from "./mock_gain_node_test.ts";
+export { mockVideo } from "./mock_video_test.ts";
 
 // Global constructor mocks
 export function setupGlobalMocks() {
-    global.AudioContext = vi.fn(() => mockAudioContext) as any;
-    global.GainNode = MockGainNode as any;
-    global.AudioWorkletNode = vi.fn(() => mockAudioWorkletNode) as any;
-    global.HTMLCanvasElement = vi.fn(() => mockCanvas) as any;
-    global.HTMLVideoElement = vi.fn(() => mockVideo) as any;
+	(globalThis as any).AudioContext = class MockAudioContext {
+		audioWorklet = {
+			addModule: mockAudioWorkletAddModule,
+		};
+		get currentTime() {
+			return this._currentTime || 0;
+		}
+		set currentTime(value: number) {
+			this._currentTime = value;
+		}
+		_currentTime = 0;
+		sampleRate = 44100;
+		destination = {};
+		close = mockAudioContextClose;
+	};
+	(globalThis as any).GainNode = MockGainNode;
+	(globalThis as any).AudioWorkletNode = () => mockAudioWorkletNode;
+	(globalThis as any).HTMLCanvasElement = () => mockCanvas;
+	(globalThis as any).HTMLVideoElement = () => mockVideo;
+
+	// Mock console.warn for testing
+	(globalThis as any).originalConsoleWarn = console.warn;
+	(globalThis as any).warnCalls = [];
+	console.warn = (...args: any[]) => {
+		(globalThis as any).warnCalls.push(args);
+	};
 }
 
 export function resetGlobalMocks() {
-    vi.clearAllMocks();
-    (global.AudioContext as any).mockImplementation(() => mockAudioContext);
-    global.GainNode = MockGainNode as any;
-    (global.AudioWorkletNode as any).mockImplementation(() => mockAudioWorkletNode);
-    (global.HTMLCanvasElement as any).mockImplementation(() => mockCanvas);
-    (global.HTMLVideoElement as any).mockImplementation(() => mockVideo);
+	// Reset spies
+	mockCanvasContext.clearRect.calls.length = 0;
+	mockCanvasContext.drawImage.calls.length = 0;
+	mockCanvasContext.fillText.calls.length = 0;
+	mockVideo.play.calls.length = 0;
+	mockVideo.pause.calls.length = 0;
+	mockVideo.addEventListener.calls.length = 0;
+	mockVideo.removeEventListener.calls.length = 0;
+	mockAudioWorkletAddModule.calls.length = 0;
+	mockAudioContextClose.calls.length = 0;
+	mockGainNodeConnect.calls.length = 0;
+	mockGainNodeDisconnect.calls.length = 0;
+	mockWorkletConnect.calls.length = 0;
+	mockWorkletDisconnect.calls.length = 0;
+	mockWorkletPort.postMessage.calls.length = 0;
+
+	// Reset console.warn calls
+	(globalThis as any).warnCalls = [];
+
+	// Re-setup global mocks
+	setupGlobalMocks();
 }

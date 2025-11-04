@@ -1,325 +1,381 @@
-import { DefaultVolume, DefaultMinGain, DefaultFadeTime, MIN_GAIN_FALLBACK, FADE_TIME_FALLBACK, isValidMinGain, isValidFadeTime, isValidVolume, VolumeController } from './volume.ts';
-import { setupGlobalMocks, resetGlobalMocks } from './test-utils.test.ts';
-import { assertEquals, assertExists, assert, assertRejects, assertThrows } from "@std/assert";
+// Set up global mocks before importing volume.ts
+import { setupGlobalMocks } from "./test-utils_test.ts";
+setupGlobalMocks();
 
+import { assertEquals } from "@std/assert";
+import { resetGlobalMocks } from "./test-utils_test.ts";
 
 // Type augmentation for testing globalThis properties
 declare global {
-    var __DEFAULT_VOLUME__: number | undefined;
-    var __DEFAULT_MIN_GAIN__: number | undefined;
-    var __DEFAULT_FADE_TIME__: number | undefined;
+	var __DEFAULT_VOLUME__: number | undefined;
+	var __DEFAULT_MIN_GAIN__: number | undefined;
+	var __DEFAULT_FADE_TIME__: number | undefined;
 }
 
-describe('Volume', () => {
-    let originalVolume: number | undefined;
-    let originalMinGain: number | undefined;
-    let originalFadeTime: number | undefined;
-    let consoleWarnSpy: ReturnType<typeof /* TODO: Convert spy */ undefined>;
+// Import types statically
+import type { VolumeController } from "./volume.ts";
 
-    /* TODO: Convert beforeEach */ beforeEach(() => {
-        // Save original globalThis values
-        originalVolume = (globalThis as any).__DEFAULT_VOLUME__;
-        originalMinGain = (globalThis as any).__DEFAULT_MIN_GAIN__;
-        originalFadeTime = (globalThis as any).__DEFAULT_FADE_TIME__;
+// Dynamic import to ensure mocks are set up
+const { DefaultFadeTime, DefaultMinGain, DefaultVolume, FADE_TIME_FALLBACK, isValidFadeTime, isValidMinGain, isValidVolume, MIN_GAIN_FALLBACK, VolumeController: VolumeControllerClass } = await import("./volume.ts");
 
-        // Clear globalThis properties
-        delete (globalThis as any).__DEFAULT_VOLUME__;
-        delete (globalThis as any).__DEFAULT_MIN_GAIN__;
-        delete (globalThis as any).__DEFAULT_FADE_TIME__;
+Deno.test("Volume", async (t) => {
+	let originalVolume: number | undefined;
+	let originalMinGain: number | undefined;
+	let originalFadeTime: number | undefined;
+	let originalConsoleWarn: typeof console.warn;
 
-        // TODO: Mock console.warn - needs manual conversion
-        // consoleWarnSpy = ...; // Vitest spy removed - implement with Deno mocking library if needed
+	const setupTest = () => {
+		// Save original globalThis values
+		originalVolume = (globalThis as any).__DEFAULT_VOLUME__;
+		originalMinGain = (globalThis as any).__DEFAULT_MIN_GAIN__;
+		originalFadeTime = (globalThis as any).__DEFAULT_FADE_TIME__;
 
-        // Set up global mocks for Web Audio API
-        setupGlobalMocks();
-    });
+		// Clear globalThis properties
+		delete (globalThis as any).__DEFAULT_VOLUME__;
+		delete (globalThis as any).__DEFAULT_MIN_GAIN__;
+		delete (globalThis as any).__DEFAULT_FADE_TIME__;
 
-    /* TODO: Convert afterEach */ afterEach(() => {
-        // Restore original globalThis values
-        if (originalVolume !== undefined) {
-            (globalThis as any).__DEFAULT_VOLUME__ = originalVolume;
-        } else {
-            delete (globalThis as any).__DEFAULT_VOLUME__;
-        }
+		// Mock console.warn
+		originalConsoleWarn = console.warn;
+		console.warn = (() => {}) as typeof console.warn;
 
-        if (originalMinGain !== undefined) {
-            (globalThis as any).__DEFAULT_MIN_GAIN__ = originalMinGain;
-        } else {
-            delete (globalThis as any).__DEFAULT_MIN_GAIN__;
-        }
+		// Set up global mocks for Web Audio API
+		setupGlobalMocks();
+	};
 
-        if (originalFadeTime !== undefined) {
-            (globalThis as any).__DEFAULT_FADE_TIME__ = originalFadeTime;
-        } else {
-            delete (globalThis as any).__DEFAULT_FADE_TIME__;
-        }
+	const cleanupTest = () => {
+		// Restore original globalThis values
+		if (originalVolume !== undefined) {
+			(globalThis as any).__DEFAULT_VOLUME__ = originalVolume;
+		} else {
+			delete (globalThis as any).__DEFAULT_VOLUME__;
+		}
 
-        // Restore console.warn
-        consoleWarnSpy.mockRestore();
+		if (originalMinGain !== undefined) {
+			(globalThis as any).__DEFAULT_MIN_GAIN__ = originalMinGain;
+		} else {
+			delete (globalThis as any).__DEFAULT_MIN_GAIN__;
+		}
 
-        // Reset global mocks
-        resetGlobalMocks();
-    });
+		if (originalFadeTime !== undefined) {
+			(globalThis as any).__DEFAULT_FADE_TIME__ = originalFadeTime;
+		} else {
+			delete (globalThis as any).__DEFAULT_FADE_TIME__;
+		}
 
-    describe('Default Values', () => {
-        test('returns fallback values when globalThis properties are not set', () => {
-            const volume = DefaultVolume();
-            const minGain = DefaultMinGain();
-            const fadeTime = DefaultFadeTime();
+		// Restore console.warn
+		console.warn = originalConsoleWarn;
 
-            assertEquals(volume, 0.5);
-            assertEquals(minGain, MIN_GAIN_FALLBACK);
-            assertEquals(fadeTime, FADE_TIME_FALLBACK);
-        });
+		// Reset global mocks
+		resetGlobalMocks();
+	};
 
-        test('returns globalThis values when set', () => {
-            // Simulate Vite define injection
-            (globalThis as any).__DEFAULT_VOLUME__ = 0.7;
-            (globalThis as any).__DEFAULT_MIN_GAIN__ = 0.002;
-            (globalThis as any).__DEFAULT_FADE_TIME__ = 0.09;
+	await t.step("Default Values", async (t) => {
+		await t.step("returns fallback values when globalThis properties are not set", () => {
+			setupTest();
+			try {
+				const volume = DefaultVolume();
+				const minGain = DefaultMinGain();
+				const fadeTime = DefaultFadeTime();
 
-            const volume = DefaultVolume();
-            const minGain = DefaultMinGain();
-            const fadeTime = DefaultFadeTime();
+				assertEquals(volume, 0.5);
+				assertEquals(minGain, MIN_GAIN_FALLBACK);
+				assertEquals(fadeTime, FADE_TIME_FALLBACK);
+			} finally {
+				cleanupTest();
+			}
+		});
 
-            assertEquals(volume, 0.7);
-            assertEquals(minGain, 0.002);
-            assertEquals(fadeTime, 0.09);
-        });
+		await t.step("returns globalThis values when set", () => {
+			setupTest();
+			try {
+				// Simulate Vite define injection
+				(globalThis as any).__DEFAULT_VOLUME__ = 0.7;
+				(globalThis as any).__DEFAULT_MIN_GAIN__ = 0.002;
+				(globalThis as any).__DEFAULT_FADE_TIME__ = 0.09;
 
-        test('warns when globalThis values are invalid', () => {
-            // Simulate invalid Vite define injection
-            (globalThis as any).__DEFAULT_VOLUME__ = 1.5;
-            (globalThis as any).__DEFAULT_MIN_GAIN__ = NaN;
-            (globalThis as any).__DEFAULT_FADE_TIME__ = Infinity;
+				const volume = DefaultVolume();
+				const minGain = DefaultMinGain();
+				const fadeTime = DefaultFadeTime();
 
-            const volume = DefaultVolume();
-            const minGain = DefaultMinGain();
-            const fadeTime = DefaultFadeTime();
+				assertEquals(volume, 0.7);
+				assertEquals(minGain, 0.002);
+				assertEquals(fadeTime, 0.09);
+			} finally {
+				cleanupTest();
+			}
+		});
 
-            assertEquals(volume, 0.5);
-            assertEquals(minGain, MIN_GAIN_FALLBACK);
-            assertEquals(fadeTime, FADE_TIME_FALLBACK);
+		await t.step("warns when globalThis values are invalid", () => {
+			setupTest();
+			try {
+				// Simulate invalid Vite define injection
+				(globalThis as any).__DEFAULT_VOLUME__ = 1.5;
+				(globalThis as any).__DEFAULT_MIN_GAIN__ = NaN;
+				(globalThis as any).__DEFAULT_FADE_TIME__ = Infinity;
 
-            expect(consoleWarnSpy).toHaveBeenCalledWith('[volume] __DEFAULT_VOLUME__ is out of range, fallback to 0.5:', 1.5);
-        });
-    });
+				const volume = DefaultVolume();
+				const minGain = DefaultMinGain();
+				const fadeTime = DefaultFadeTime();
 
-    describe('Validation Functions', () => {
-        describe('isValidMinGain', () => {
-            test('returns true for valid min gain values', () => {
-                expect(isValidMinGain(0.001)).toBe(true);
-                expect(isValidMinGain(0.005)).toBe(true);
-                expect(isValidMinGain(0.009)).toBe(true);
-            });
+				assertEquals(volume, 0.5);
+				assertEquals(minGain, MIN_GAIN_FALLBACK);
+				assertEquals(fadeTime, FADE_TIME_FALLBACK);
 
-            test('returns false for invalid min gain values', () => {
-                expect(isValidMinGain(0)).toBe(false);
-                expect(isValidMinGain(-0.001)).toBe(false);
-                expect(isValidMinGain(0.01)).toBe(false);
-                expect(isValidMinGain(0.1)).toBe(false);
-                expect(isValidMinGain(NaN)).toBe(false);
-                expect(isValidMinGain(Infinity)).toBe(false);
-                expect(isValidMinGain('0.001' as any)).toBe(false);
-            });
-        });
+				assertEquals((globalThis as any).warnCalls.length, 1);
+				assertEquals((globalThis as any).warnCalls[0][0], "[volume] __DEFAULT_VOLUME__ is out of range, fallback to 0.5:");
+				assertEquals((globalThis as any).warnCalls[0][1], 1.5);
+			} finally {
+				cleanupTest();
+			}
+		});
+	});
 
-        describe('isValidFadeTime', () => {
-            test('returns true for valid fade time values', () => {
-                expect(isValidFadeTime(0.02)).toBe(true);
-                expect(isValidFadeTime(0.5)).toBe(true);
-                expect(isValidFadeTime(0.99)).toBe(true);
-            });
+	await t.step("Validation Functions", async (t) => {
+		await t.step("isValidMinGain", async (t) => {
+			await t.step("returns true for valid min gain values", () => {
+				assertEquals(isValidMinGain(0.001), true);
+				assertEquals(isValidMinGain(0.005), true);
+				assertEquals(isValidMinGain(0.009), true);
+			});
 
-            test('returns false for invalid fade time values', () => {
-                expect(isValidFadeTime(0)).toBe(false);
-                expect(isValidFadeTime(0.005)).toBe(false);
-                expect(isValidFadeTime(1.0)).toBe(false);
-                expect(isValidFadeTime(2.0)).toBe(false);
-                expect(isValidFadeTime(NaN)).toBe(false);
-                expect(isValidFadeTime(Infinity)).toBe(false);
-                expect(isValidFadeTime('0.5' as any)).toBe(false);
-            });
-        });
-    });
+			await t.step("returns false for invalid min gain values", () => {
+				assertEquals(isValidMinGain(0), false);
+				assertEquals(isValidMinGain(-0.001), false);
+				assertEquals(isValidMinGain(0.01), false);
+				assertEquals(isValidMinGain(0.1), false);
+				assertEquals(isValidMinGain(NaN), false);
+				assertEquals(isValidMinGain(Infinity), false);
+				assertEquals(isValidMinGain("0.001" as any), false);
+			});
+		});
 
-    describe('Validation Functions', () => {
-        describe('isValidMinGain', () => {
-            test('returns true for valid min gain values', () => {
-                expect(isValidMinGain(0.001)).toBe(true);
-                expect(isValidMinGain(0.005)).toBe(true);
-                expect(isValidMinGain(0.009)).toBe(true);
-            });
+		await t.step("isValidFadeTime", async (t) => {
+			await t.step("returns true for valid fade time values", () => {
+				assertEquals(isValidFadeTime(0.02), true);
+				assertEquals(isValidFadeTime(0.5), true);
+				assertEquals(isValidFadeTime(0.99), true);
+			});
 
-            test('returns false for invalid min gain values', () => {
-                expect(isValidMinGain(0)).toBe(false);
-                expect(isValidMinGain(-0.001)).toBe(false);
-                expect(isValidMinGain(0.01)).toBe(false);
-                expect(isValidMinGain(0.1)).toBe(false);
-                expect(isValidMinGain(NaN)).toBe(false);
-                expect(isValidMinGain(Infinity)).toBe(false);
-                expect(isValidMinGain('0.001' as any)).toBe(false);
-            });
-        });
+			await t.step("returns false for invalid fade time values", () => {
+				assertEquals(isValidFadeTime(0), false);
+				assertEquals(isValidFadeTime(0.005), false);
+				assertEquals(isValidFadeTime(1.0), false);
+				assertEquals(isValidFadeTime(2.0), false);
+				assertEquals(isValidFadeTime(NaN), false);
+				assertEquals(isValidFadeTime(Infinity), false);
+				assertEquals(isValidFadeTime("0.5" as any), false);
+			});
+		});
 
-        describe('isValidFadeTime', () => {
-            test('returns true for valid fade time values', () => {
-                expect(isValidFadeTime(0.02)).toBe(true);
-                expect(isValidFadeTime(0.5)).toBe(true);
-                expect(isValidFadeTime(0.99)).toBe(true);
-            });
+		await t.step("isValidVolume", async (t) => {
+			await t.step("returns true for valid volume values", () => {
+				assertEquals(isValidVolume(0), true);
+				assertEquals(isValidVolume(0.1), true);
+				assertEquals(isValidVolume(0.5), true);
+				assertEquals(isValidVolume(1.0), true);
+			});
 
-            test('returns false for invalid fade time values', () => {
-                expect(isValidFadeTime(0)).toBe(false);
-                expect(isValidFadeTime(0.005)).toBe(false);
-                expect(isValidFadeTime(1.0)).toBe(false);
-                expect(isValidFadeTime(2.0)).toBe(false);
-                expect(isValidFadeTime(NaN)).toBe(false);
-                expect(isValidFadeTime(Infinity)).toBe(false);
-                expect(isValidFadeTime('0.5' as any)).toBe(false);
-            });
-        });
-
-        describe('isValidVolume', () => {
-            test('returns true for valid volume values', () => {
-                expect(isValidVolume(0)).toBe(true);
-                expect(isValidVolume(0.1)).toBe(true);
-                expect(isValidVolume(0.5)).toBe(true);
-                expect(isValidVolume(1.0)).toBe(true);
-            });
-
-            test('returns false for invalid volume values', () => {
-                expect(isValidVolume(-0.1)).toBe(false);
-                expect(isValidVolume(1.1)).toBe(false);
-                expect(isValidVolume(NaN)).toBe(false);
-                expect(isValidVolume(Infinity)).toBe(false);
-                expect(isValidVolume('0.5' as any)).toBe(false);
-                expect(isValidVolume(null)).toBe(false);
-                expect(isValidVolume(undefined)).toBe(false);
-            });
-        });
-    });
+			await t.step("returns false for invalid volume values", () => {
+				assertEquals(isValidVolume(-0.1), false);
+				assertEquals(isValidVolume(1.1), false);
+				assertEquals(isValidVolume(NaN), false);
+				assertEquals(isValidVolume(Infinity), false);
+				assertEquals(isValidVolume("0.5" as any), false);
+				assertEquals(isValidVolume(null), false);
+				assertEquals(isValidVolume(undefined), false);
+			});
+		});
+	});
 });
 
-describe('VolumeController', () => {
-    let audioContext: AudioContext;
-    let controller: VolumeController;
+Deno.test("VolumeController", async (t) => {
+	let audioContext: AudioContext;
+	let controller: VolumeController;
 
-    /* TODO: Convert beforeEach */ beforeEach(() => {
-        audioContext = new AudioContext();
-        controller = new VolumeController(audioContext);
-    });
+	const setupControllerTest = () => {
+		audioContext = new AudioContext();
+		controller = new VolumeControllerClass(audioContext);
+	};
 
-    /* TODO: Convert afterEach */ afterEach(() => {
-        controller.disconnect();
-    });
+	const cleanupControllerTest = () => {
+		controller.disconnect();
+	};
 
-    describe('constructor', () => {
-        test('creates with default volume', () => {
-            assertEquals(controller.volume, 0.5);
-            assertEquals(controller.muted, false);
-        });
+	await t.step("constructor", async (t) => {
+		await t.step("creates with default volume", () => {
+			setupControllerTest();
+			try {
+				assertEquals(controller.volume, 0.5);
+				assertEquals(controller.muted, false);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('creates with custom initial volume', () => {
-            const customController = new VolumeController(audioContext, { initialVolume: 0.8 });
-            assertEquals(customController.volume, 0.8);
-            customController.disconnect();
-        });
+		await t.step("creates with custom initial volume", () => {
+			audioContext = new AudioContext();
+			const customController = new VolumeControllerClass(audioContext, { initialVolume: 0.8 });
+			try {
+				assertEquals(customController.volume, 0.8);
+			} finally {
+				customController.disconnect();
+			}
+		});
 
-        test('creates with NaN initial volume', () => {
-            const customController = new VolumeController(audioContext, { initialVolume: NaN });
-            assertEquals(customController.volume, 1); // Falls back to 1
-            customController.disconnect();
-        });
+		await t.step("creates with NaN initial volume", () => {
+			audioContext = new AudioContext();
+			const customController = new VolumeControllerClass(audioContext, { initialVolume: NaN });
+			try {
+				assertEquals(customController.volume, 1); // Falls back to 1
+			} finally {
+				customController.disconnect();
+			}
+		});
 
-        test('creates with Infinity initial volume', () => {
-            const customController = new VolumeController(audioContext, { initialVolume: Infinity });
-            assertEquals(customController.volume, 1); // Falls back to 1
-            customController.disconnect();
-        });
+		await t.step("creates with Infinity initial volume", () => {
+			audioContext = new AudioContext();
+			const customController = new VolumeControllerClass(audioContext, {
+				initialVolume: Infinity,
+			});
+			try {
+				assertEquals(customController.volume, 1); // Falls back to 1
+			} finally {
+				customController.disconnect();
+			}
+		});
 
-        test('uses custom fade time', () => {
-            const customController = new VolumeController(audioContext, { fadeTimeMs: 0.1 });
-            // fadeTimeMs is stored in #rampMs, but we can't access it directly
-            // Instead, test by calling setVolume and checking the ramp time
-            customController.setVolume(0.3);
-            // The mock should have been called with the correct time
-            assertEquals(true, true); // Placeholder, actual test would check mock calls
-            customController.disconnect();
-        });
-    });
+		await t.step("uses custom fade time", () => {
+			audioContext = new AudioContext();
+			const customController = new VolumeControllerClass(audioContext, { fadeTimeMs: 0.1 });
+			try {
+				// fadeTimeMs is stored in #rampMs, but we can't access it directly
+				// Instead, test by calling setVolume and checking the ramp time
+				customController.setVolume(0.3);
+				// The mock should have been called with the correct time
+				assertEquals(true, true); // Placeholder, actual test would check mock calls
+			} finally {
+				customController.disconnect();
+			}
+		});
+	});
 
-    describe('setVolume', () => {
-        test('sets volume with fade', () => {
-            controller.setVolume(0.8);
-            assertEquals(controller.volume, 0.8);
-        });
+	await t.step("setVolume", async (t) => {
+		await t.step("sets volume with fade", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.8);
+				assertEquals(controller.volume, 0.8);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('clamps volume to valid range', () => {
-            controller.setVolume(-0.1);
-            assertEquals(controller.volume, 0);
+		await t.step("clamps volume to valid range", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(-0.1);
+				assertEquals(controller.volume, 0);
 
-            controller.setVolume(1.5);
-            assertEquals(controller.volume, 1);
+				controller.setVolume(1.5);
+				assertEquals(controller.volume, 1);
 
-            controller.setVolume(NaN);
-            assertEquals(controller.volume, 1);
+				controller.setVolume(NaN);
+				assertEquals(controller.volume, 1);
 
-            controller.setVolume(Infinity);
-            assertEquals(controller.volume, 1);
-        });
+				controller.setVolume(Infinity);
+				assertEquals(controller.volume, 1);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('handles very low volume with exponential ramp', () => {
-            controller.setVolume(0.0005); // Below DefaultMinGain
-            assertEquals(controller.volume, 0); // It ramps to min gain then to 0
-        });
-    });
+		await t.step("handles very low volume with exponential ramp", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.0005); // Below DefaultMinGain
+				assertEquals(controller.volume, 0); // It ramps to min gain then to 0
+			} finally {
+				cleanupControllerTest();
+			}
+		});
+	});
 
-    describe('mute', () => {
-        test('mutes and unmutes', () => {
-            controller.setVolume(0.7);
-            assertEquals(controller.muted, false);
+	await t.step("mute", async (t) => {
+		await t.step("mutes and unmutes", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.7);
+				assertEquals(controller.muted, false);
 
-            controller.mute(true);
-            assertEquals(controller.muted, true);
+				controller.mute(true);
+				assertEquals(controller.muted, true);
 
-            controller.mute(false);
-            assertEquals(controller.muted, false);
-        });
+				controller.mute(false);
+				assertEquals(controller.muted, false);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('mutes low volume correctly', () => {
-            controller.setVolume(0.0005);
-            controller.mute(true);
-            assertEquals(controller.volume, 0);
-        });
+		await t.step("mutes low volume correctly", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.0005);
+				controller.mute(true);
+				assertEquals(controller.volume, 0);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('restores previous volume when unmuting', () => {
-            controller.setVolume(0.6);
-            controller.mute(true);
-            assertEquals(controller.volume, 0);
+		await t.step("restores previous volume when unmuting", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.6);
+				controller.mute(true);
+				assertEquals(controller.volume, 0);
 
-            controller.mute(false);
-            assertEquals(controller.volume, 0.6);
-        });
+				controller.mute(false);
+				assertEquals(controller.volume, 0.6);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('uses default volume if unmuting with zero volume', () => {
-            controller.setVolume(0);
-            controller.mute(true);
-            controller.mute(false);
-            assertEquals(controller.volume, 0.5); // DefaultVolume
-        });
-    });
+		await t.step("uses default volume if unmuting with zero volume", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0);
+				controller.mute(true);
+				controller.mute(false);
+				assertEquals(controller.volume, 0.5); // DefaultVolume
+			} finally {
+				cleanupControllerTest();
+			}
+		});
+	});
 
-    describe('getters', () => {
-        test('volume getter returns current gain value', () => {
-            controller.setVolume(0.4);
-            assertEquals(controller.volume, 0.4);
-        });
+	await t.step("getters", async (t) => {
+		await t.step("volume getter returns current gain value", () => {
+			setupControllerTest();
+			try {
+				controller.setVolume(0.4);
+				assertEquals(controller.volume, 0.4);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
 
-        test('muted getter returns mute state', () => {
-            assertEquals(controller.muted, false);
-            controller.mute(true);
-            assertEquals(controller.muted, true);
-        });
-    });
+		await t.step("muted getter returns mute state", () => {
+			setupControllerTest();
+			try {
+				assertEquals(controller.muted, false);
+				controller.mute(true);
+				assertEquals(controller.muted, true);
+			} finally {
+				cleanupControllerTest();
+			}
+		});
+	});
 });
