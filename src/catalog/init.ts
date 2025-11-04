@@ -1,12 +1,10 @@
-import { z } from "zod"
-import { uint62Schema } from "./integers"
-import { TrackDescriptorSchema } from "./track"
+import { z } from "zod";
 
-export const DEFAULT_CATALOG_VERSION = "@gomoqt/v1"
+export const DEFAULT_CATALOG_VERSION = "@gomoqt/v1";
 
 export const CatalogInitSchema = z.object({
 	version: z.string(),
-	$schema: z.url().optional(),
+	$schema: z.string().url().optional(),
 });
 
 export type CatalogInit = z.infer<typeof CatalogInitSchema>;

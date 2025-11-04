@@ -1,13 +1,11 @@
 export interface ProfileInit {
-    id: string;
+	id: string;
 }
 
 export class Profile {
-    readonly id: string;
+	readonly id: string;
 
-    constructor(init: ProfileInit) {
-        this.id = init.id;
-    }
-
-    
+	constructor(init: ProfileInit) {
+		this.id = init.id;
+	}
 }
