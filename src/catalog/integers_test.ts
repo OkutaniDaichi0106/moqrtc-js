@@ -582,7 +582,10 @@ Deno.test("Type System and Runtime Validation: Union type handling for uint62 - 
 	assertEquals(uint62(Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER);
 
 	// Valid as bigint beyond Number.MAX_SAFE_INTEGER
-	assertEquals(uint62(BigInt(Number.MAX_SAFE_INTEGER) + 1n), BigInt(Number.MAX_SAFE_INTEGER) + 1n);
+	assertEquals(
+		uint62(BigInt(Number.MAX_SAFE_INTEGER) + 1n),
+		BigInt(Number.MAX_SAFE_INTEGER) + 1n,
+	);
 
 	// Invalid in both branches
 	assertThrows(() => uint62(-1));

@@ -88,7 +88,9 @@ Deno.test("audio_hijack_worklet", async (t) => {
 							numberOfChannels: numberOfChannels,
 							numberOfFrames: numberOfFrames,
 							data: data,
-							timestamp: Math.round(this.#currentFrame * 1_000_000 / this.#sampleRate),
+							timestamp: Math.round(
+								this.#currentFrame * 1_000_000 / this.#sampleRate,
+							),
 							transfer: [data.buffer],
 						};
 
@@ -143,8 +145,9 @@ Deno.test("audio_hijack_worklet", async (t) => {
 			try {
 				// Import the worklet code by simulating the worklet context
 				if (typeof (globalThis as any).AudioWorkletProcessor !== "undefined") {
-				// Simulate the worklet code execution
-				class TestAudioHijackProcessor extends (globalThis as any).AudioWorkletProcessor {
+					// Simulate the worklet code execution
+					class TestAudioHijackProcessor
+						extends (globalThis as any).AudioWorkletProcessor {
 						#currentFrame: number = 0;
 						#sampleRate: number;
 						#targetChannels: number;
@@ -223,7 +226,10 @@ Deno.test("audio_hijack_worklet", async (t) => {
 					}
 
 					// Register the processor
-					(globalThis as any).registerProcessor("AudioHijacker", TestAudioHijackProcessor);
+					(globalThis as any).registerProcessor(
+						"AudioHijacker",
+						TestAudioHijackProcessor,
+					);
 				}
 
 				// Create processor instance
@@ -252,12 +258,16 @@ Deno.test("audio_hijack_worklet", async (t) => {
 			};
 
 			try {
-				class InitTestAudioHijackProcessor extends (globalThis as any).AudioWorkletProcessor {
+				class InitTestAudioHijackProcessor
+					extends (globalThis as any).AudioWorkletProcessor {
 					constructor(_options: AudioWorkletNodeOptions) {
 						super();
 					}
 				}
-				(globalThis as any).registerProcessor("AudioHijacker", InitTestAudioHijackProcessor);
+				(globalThis as any).registerProcessor(
+					"AudioHijacker",
+					InitTestAudioHijackProcessor,
+				);
 
 				const ProcessorClass = mockRegisterProcessor.calls[0][1];
 				const proc = new ProcessorClass({

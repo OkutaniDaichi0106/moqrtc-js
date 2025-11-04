@@ -1,16 +1,39 @@
 // Common test utilities and mocks for hang-web tests
 
 import { mockAudioContextClose, mockAudioWorkletAddModule } from "./mock_audio_context_test.ts";
-import { mockAudioWorkletNode, mockWorkletConnect, mockWorkletDisconnect, mockWorkletPort } from "./mock_audio_worklet_node_test.ts";
+import {
+	mockAudioWorkletNode,
+	mockWorkletConnect,
+	mockWorkletDisconnect,
+	mockWorkletPort,
+} from "./mock_audio_worklet_node_test.ts";
 import { mockCanvas, mockCanvasContext } from "./mock_canvas_test.ts";
-import { MockGainNode, mockGainNodeConnect, mockGainNodeDisconnect } from "./mock_gain_node_test.ts";
+import {
+	MockGainNode,
+	mockGainNodeConnect,
+	mockGainNodeDisconnect,
+} from "./mock_gain_node_test.ts";
 import { mockVideo } from "./mock_video_test.ts";
 
 // Re-export mocks for convenience
-export { mockAudioContext, mockAudioContextClose, mockAudioWorkletAddModule } from "./mock_audio_context_test.ts";
-export { mockAudioWorkletNode, mockWorkletConnect, mockWorkletDisconnect, mockWorkletPort } from "./mock_audio_worklet_node_test.ts";
+export {
+	mockAudioContext,
+	mockAudioContextClose,
+	mockAudioWorkletAddModule,
+} from "./mock_audio_context_test.ts";
+export {
+	mockAudioWorkletNode,
+	mockWorkletConnect,
+	mockWorkletDisconnect,
+	mockWorkletPort,
+} from "./mock_audio_worklet_node_test.ts";
 export { mockCanvas, mockCanvasContext } from "./mock_canvas_test.ts";
-export { MockGainNode, mockGainNode, mockGainNodeConnect, mockGainNodeDisconnect } from "./mock_gain_node_test.ts";
+export {
+	MockGainNode,
+	mockGainNode,
+	mockGainNodeConnect,
+	mockGainNodeDisconnect,
+} from "./mock_gain_node_test.ts";
 export { mockVideo } from "./mock_video_test.ts";
 
 // Global constructor mocks

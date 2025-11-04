@@ -25,7 +25,7 @@ mockGetDisplayMedia = Object.assign(
 		mock: {
 			calls: mockGetDisplayMediaCalls,
 		},
-	}
+	},
 );
 
 // Helper to create properly typed mock MediaStream
@@ -71,7 +71,8 @@ Deno.test("Screen", async (t) => {
 
 			assertEquals(screen.enabled, false);
 			assertEquals(screen.constraints, constraints);
-		});		await t.step("creates screen with all props", () => {
+		});
+		await t.step("creates screen with all props", () => {
 			resetMockCalls();
 			const constraints = {
 				video: { frameRate: 30 },
@@ -190,7 +191,7 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getVideoTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 			assertEquals(mockGetDisplayMediaCalls.length, 0);
 		});
@@ -202,7 +203,7 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getVideoTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 			assertEquals(mockGetDisplayMediaCalls.length, 0);
 		});
@@ -217,28 +218,31 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getVideoTrack(),
 				Error,
-				"Screen capture permission denied"
+				"Screen capture permission denied",
 			);
 			assertEquals(mockGetDisplayMediaCalls.length, 1);
 			assertEquals(mockGetDisplayMediaCalls[0], [undefined]);
 		});
 
-		await t.step("throws error when getDisplayMedia returns stream without video track", async () => {
-			resetMockCalls();
-			const mockStream = createMockStream([]); // No video tracks
+		await t.step(
+			"throws error when getDisplayMedia returns stream without video track",
+			async () => {
+				resetMockCalls();
+				const mockStream = createMockStream([]); // No video tracks
 
-			mockGetDisplayMedia = () => Promise.resolve(mockStream);
+				mockGetDisplayMedia = () => Promise.resolve(mockStream);
 
-			const screen = new Screen({ enabled: true });
+				const screen = new Screen({ enabled: true });
 
-			await assertRejects(
-				async () => await screen.getVideoTrack(),
-				Error,
-				"Failed to obtain display video track"
-			);
-			assertEquals(mockGetDisplayMediaCalls.length, 1);
-			assertEquals(mockGetDisplayMediaCalls[0], [undefined]);
-		});
+				await assertRejects(
+					async () => await screen.getVideoTrack(),
+					Error,
+					"Failed to obtain display video track",
+				);
+				assertEquals(mockGetDisplayMediaCalls.length, 1);
+				assertEquals(mockGetDisplayMediaCalls[0], [undefined]);
+			},
+		);
 
 		await t.step("stops extra tracks from stream", async () => {
 			resetMockCalls();
@@ -273,7 +277,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { extraTrackStopped = true; },
+				stop: () => {
+					extraTrackStopped = true;
+				},
 			} as MediaStreamTrack;
 
 			const mockStream = {
@@ -434,7 +440,7 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getAudioTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 			assertEquals(mockGetDisplayMediaCalls.length, 0);
 		});
@@ -495,7 +501,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { videoTrackStopped = true; },
+				stop: () => {
+					videoTrackStopped = true;
+				},
 			} as MediaStreamTrack;
 
 			const mockAudioTrack = {
@@ -506,7 +514,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { audioTrackStopped = true; },
+				stop: () => {
+					audioTrackStopped = true;
+				},
 			} as MediaStreamTrack;
 
 			const mockStream = createMockStream([mockVideoTrack], [mockAudioTrack]);
@@ -539,7 +549,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { videoTrackStopped = true; },
+				stop: () => {
+					videoTrackStopped = true;
+				},
 			} as MediaStreamTrack;
 
 			const mockStream = createMockStream([mockVideoTrack]);
@@ -621,7 +633,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { throw new Error("Video stop failed"); },
+				stop: () => {
+					throw new Error("Video stop failed");
+				},
 			} as unknown as MediaStreamTrack;
 
 			const mockAudioTrack = {
@@ -669,7 +683,9 @@ Deno.test("Screen", async (t) => {
 				muted: false,
 				readyState: "live" as const,
 				contentHint: "",
-				stop: () => { throw new Error("Audio stop failed"); },
+				stop: () => {
+					throw new Error("Audio stop failed");
+				},
 			} as unknown as MediaStreamTrack;
 
 			const mockStream = createMockStream([mockVideoTrack], [mockAudioTrack]);
@@ -750,12 +766,12 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getVideoTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 			await assertRejects(
 				async () => await screen.getAudioTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 
 			// Enable and test
@@ -784,12 +800,12 @@ Deno.test("Screen", async (t) => {
 			await assertRejects(
 				async () => await screen.getVideoTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 			await assertRejects(
 				async () => await screen.getAudioTrack(),
 				Error,
-				"Screen capture is not enabled"
+				"Screen capture is not enabled",
 			);
 		});
 

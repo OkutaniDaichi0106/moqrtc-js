@@ -80,12 +80,20 @@ const importUrl = createMockFunction().mockReturnValue("mock-url");
 	value: BroadcastSubscriber,
 });
 
-(Object as any).defineProperty(await import("./internal/audio/audio_hijack_worklet.ts"), "importWorkletUrl", {
-	value: importWorkletUrl,
-});
-(Object as any).defineProperty(await import("./internal/audio/audio_offload_worklet.ts"), "importUrl", {
-	value: importUrl,
-});
+(Object as any).defineProperty(
+	await import("./internal/audio/audio_hijack_worklet.ts"),
+	"importWorkletUrl",
+	{
+		value: importWorkletUrl,
+	},
+);
+(Object as any).defineProperty(
+	await import("./internal/audio/audio_offload_worklet.ts"),
+	"importUrl",
+	{
+		value: importUrl,
+	},
+);
 
 Deno.test("Room", async (t) => {
 	let room: Room;
@@ -266,184 +274,184 @@ Deno.test("Room - Advanced Tests", async (t) => {
 		});
 	});
 
-		await t.step("leave functionality", async (t) => {
-			await t.step("should clean up all resources on leave", async () => {
-				const mockAnnouncementReader = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
+	await t.step("leave functionality", async (t) => {
+		await t.step("should clean up all resources on leave", async () => {
+			const mockAnnouncementReader = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
 
-				await room.join(mockSession as any, mockLocal as any);
-				await room.leave();
+			await room.join(mockSession as any, mockLocal as any);
+			await room.leave();
 
-				// Verify that leave completes without errors
-				assertEquals(onLeaveSpy.callCount, 1);
-			});
-
-			await t.step("should handle leave before join", async () => {
-				await room.leave();
-				// Should not throw
-				assertEquals(true, true);
-			});
-
-			await t.step("should handle multiple leave calls", async () => {
-				const mockAnnouncementReader = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
-
-				await room.join(mockSession as any, mockLocal as any);
-				await room.leave();
-				await room.leave(); // Second leave should not throw
-
-				assertEquals(true, true);
-			});
+			// Verify that leave completes without errors
+			assertEquals(onLeaveSpy.callCount, 1);
 		});
 
-		await t.step("member management", async (t) => {
-			await t.step("should call onJoin for local member", async () => {
-				const mockAnnouncementReader = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
-
-				await room.join(mockSession as any, mockLocal as any);
-
-				assertEquals(onJoinSpy.callCount, 1);
-				assertEquals(onJoinSpy.calls[0][0], {
-					remote: false,
-					name: "local-user",
-				});
-			});
-
-			await t.step("should call onLeave for local member on leave", async () => {
-				const mockAnnouncementReader = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
-
-				await room.join(mockSession as any, mockLocal as any);
-				await room.leave();
-
-				assertEquals(onLeaveSpy.callCount, 1);
-				assertEquals(onLeaveSpy.calls[0][0], {
-					remote: false,
-					name: "local-user",
-				});
-			});
-
-			await t.step("should handle announcement errors gracefully", async () => {
-				const mockAnnouncementReader = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/remote-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
-
-				await room.join(mockSession as any, mockLocal as any);
-
-				// Should complete without throwing
-				assertEquals(true, true);
-			});
+		await t.step("should handle leave before join", async () => {
+			await room.leave();
+			// Should not throw
+			assertEquals(true, true);
 		});
 
-		await t.step("rejoin functionality", async (t) => {
-			await t.step("should leave before joining again", async () => {
-				const mockAnnouncementReader1 = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				const mockAnnouncementReader2 = {
-					receive: createMockFunction()
-						.mockResolvedValueOnce([{
-							broadcastPath: "/test-room/local-user.hang",
-							ended: createMockFunction().mockResolvedValue(undefined),
-						}, null] as any)
-						.mockResolvedValue([null, new Error("Reader closed")]),
-					close: createMockFunction(),
-				};
-				mockSession.acceptAnnounce
-					.mockResolvedValueOnce([mockAnnouncementReader1, null] as any)
-					.mockResolvedValueOnce([mockAnnouncementReader2, null] as any);
+		await t.step("should handle multiple leave calls", async () => {
+			const mockAnnouncementReader = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
 
-				// First join
-				await room.join(mockSession as any, mockLocal as any);
+			await room.join(mockSession as any, mockLocal as any);
+			await room.leave();
+			await room.leave(); // Second leave should not throw
 
-				// Second join (should leave first)
-				await room.join(mockSession as any, mockLocal as any);
-
-				// onJoin should be called twice (once for each join)
-				assertEquals(onJoinSpy.callCount, 2);
-			});
-		});
-
-		await t.step("edge cases", async (t) => {
-			await t.step("should handle empty room ID", async () => {
-				const emptyRoom = new Room({
-					roomID: "",
-					onmember: {
-						onJoin: createMockFunction(),
-						onLeave: createMockFunction(),
-					},
-				});
-
-				assertEquals(emptyRoom.roomID, "");
-			});
-
-			await t.step("should handle special characters in room ID", async () => {
-				const specialRoom = new Room({
-					roomID: "room-with-special_chars.123",
-					onmember: {
-						onJoin: createMockFunction(),
-						onLeave: createMockFunction(),
-					},
-				});
-
-				assertEquals(specialRoom.roomID, "room-with-special_chars.123");
-			});
-
-			await t.step("should handle participant name with special characters", () => {
-				const name = participantName("test-room", "/test-room/user-name_123.hang");
-				assertEquals(name, "user-name_123");
-			});
-
-			await t.step("should construct correct broadcast path for various names", () => {
-				assertEquals(broadcastPath("room", "user"), "/room/user.hang");
-				assertEquals(broadcastPath("room-1", "user-2"), "/room-1/user-2.hang");
-				assertEquals(broadcastPath("r", "u"), "/r/u.hang");
-			});
+			assertEquals(true, true);
 		});
 	});
+
+	await t.step("member management", async (t) => {
+		await t.step("should call onJoin for local member", async () => {
+			const mockAnnouncementReader = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
+
+			await room.join(mockSession as any, mockLocal as any);
+
+			assertEquals(onJoinSpy.callCount, 1);
+			assertEquals(onJoinSpy.calls[0][0], {
+				remote: false,
+				name: "local-user",
+			});
+		});
+
+		await t.step("should call onLeave for local member on leave", async () => {
+			const mockAnnouncementReader = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
+
+			await room.join(mockSession as any, mockLocal as any);
+			await room.leave();
+
+			assertEquals(onLeaveSpy.callCount, 1);
+			assertEquals(onLeaveSpy.calls[0][0], {
+				remote: false,
+				name: "local-user",
+			});
+		});
+
+		await t.step("should handle announcement errors gracefully", async () => {
+			const mockAnnouncementReader = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/remote-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce.mockResolvedValue([mockAnnouncementReader, null] as any);
+
+			await room.join(mockSession as any, mockLocal as any);
+
+			// Should complete without throwing
+			assertEquals(true, true);
+		});
+	});
+
+	await t.step("rejoin functionality", async (t) => {
+		await t.step("should leave before joining again", async () => {
+			const mockAnnouncementReader1 = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			const mockAnnouncementReader2 = {
+				receive: createMockFunction()
+					.mockResolvedValueOnce([{
+						broadcastPath: "/test-room/local-user.hang",
+						ended: createMockFunction().mockResolvedValue(undefined),
+					}, null] as any)
+					.mockResolvedValue([null, new Error("Reader closed")]),
+				close: createMockFunction(),
+			};
+			mockSession.acceptAnnounce
+				.mockResolvedValueOnce([mockAnnouncementReader1, null] as any)
+				.mockResolvedValueOnce([mockAnnouncementReader2, null] as any);
+
+			// First join
+			await room.join(mockSession as any, mockLocal as any);
+
+			// Second join (should leave first)
+			await room.join(mockSession as any, mockLocal as any);
+
+			// onJoin should be called twice (once for each join)
+			assertEquals(onJoinSpy.callCount, 2);
+		});
+	});
+
+	await t.step("edge cases", async (t) => {
+		await t.step("should handle empty room ID", async () => {
+			const emptyRoom = new Room({
+				roomID: "",
+				onmember: {
+					onJoin: createMockFunction(),
+					onLeave: createMockFunction(),
+				},
+			});
+
+			assertEquals(emptyRoom.roomID, "");
+		});
+
+		await t.step("should handle special characters in room ID", async () => {
+			const specialRoom = new Room({
+				roomID: "room-with-special_chars.123",
+				onmember: {
+					onJoin: createMockFunction(),
+					onLeave: createMockFunction(),
+				},
+			});
+
+			assertEquals(specialRoom.roomID, "room-with-special_chars.123");
+		});
+
+		await t.step("should handle participant name with special characters", () => {
+			const name = participantName("test-room", "/test-room/user-name_123.hang");
+			assertEquals(name, "user-name_123");
+		});
+
+		await t.step("should construct correct broadcast path for various names", () => {
+			assertEquals(broadcastPath("room", "user"), "/room/user.hang");
+			assertEquals(broadcastPath("room-1", "user-2"), "/room-1/user-2.hang");
+			assertEquals(broadcastPath("r", "u"), "/r/u.hang");
+		});
+	});
+});

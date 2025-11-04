@@ -16,7 +16,17 @@ declare global {
 import type { VolumeController } from "./volume.ts";
 
 // Dynamic import to ensure mocks are set up
-const { DefaultFadeTime, DefaultMinGain, DefaultVolume, FADE_TIME_FALLBACK, isValidFadeTime, isValidMinGain, isValidVolume, MIN_GAIN_FALLBACK, VolumeController: VolumeControllerClass } = await import("./volume.ts");
+const {
+	DefaultFadeTime,
+	DefaultMinGain,
+	DefaultVolume,
+	FADE_TIME_FALLBACK,
+	isValidFadeTime,
+	isValidMinGain,
+	isValidVolume,
+	MIN_GAIN_FALLBACK,
+	VolumeController: VolumeControllerClass,
+} = await import("./volume.ts");
 
 Deno.test("Volume", async (t) => {
 	let originalVolume: number | undefined;
@@ -123,7 +133,10 @@ Deno.test("Volume", async (t) => {
 				assertEquals(fadeTime, FADE_TIME_FALLBACK);
 
 				assertEquals((globalThis as any).warnCalls.length, 1);
-				assertEquals((globalThis as any).warnCalls[0][0], "[volume] __DEFAULT_VOLUME__ is out of range, fallback to 0.5:");
+				assertEquals(
+					(globalThis as any).warnCalls[0][0],
+					"[volume] __DEFAULT_VOLUME__ is out of range, fallback to 0.5:",
+				);
 				assertEquals((globalThis as any).warnCalls[0][1], 1.5);
 			} finally {
 				cleanupTest();
@@ -215,7 +228,9 @@ Deno.test("VolumeController", async (t) => {
 
 		await t.step("creates with custom initial volume", () => {
 			audioContext = new AudioContext();
-			const customController = new VolumeControllerClass(audioContext, { initialVolume: 0.8 });
+			const customController = new VolumeControllerClass(audioContext, {
+				initialVolume: 0.8,
+			});
 			try {
 				assertEquals(customController.volume, 0.8);
 			} finally {
@@ -225,7 +240,9 @@ Deno.test("VolumeController", async (t) => {
 
 		await t.step("creates with NaN initial volume", () => {
 			audioContext = new AudioContext();
-			const customController = new VolumeControllerClass(audioContext, { initialVolume: NaN });
+			const customController = new VolumeControllerClass(audioContext, {
+				initialVolume: NaN,
+			});
 			try {
 				assertEquals(customController.volume, 1); // Falls back to 1
 			} finally {

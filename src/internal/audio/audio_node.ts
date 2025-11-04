@@ -3,8 +3,8 @@
 // Uses Web Audio API AudioEncoder/AudioDecoder for encoding/decoding
 import type { EncodeDestination } from "../container.ts";
 import {
-	workletName as hijackWorkletName,
 	importWorkletUrl as importHijackWorkletUrl,
+	workletName as hijackWorkletName,
 } from "./audio_hijack_worklet.ts";
 import {
 	importWorkletUrl as importOffloadWorkletUrl,

@@ -46,12 +46,12 @@ const catalogDecoderInstances: MockCatalogTrackDecoder[] = [];
 (room as any).participantName = createMockFunction().mockReturnValue("participant");
 
 // Mock the catalog track modules
-const mockCatalogTrackEncoder = function() {
+const mockCatalogTrackEncoder = function () {
 	const instance = new MockCatalogTrackEncoder();
 	catalogEncoderInstances.push(instance);
 	return instance;
 };
-const mockCatalogTrackDecoder = function() {
+const mockCatalogTrackDecoder = function () {
 	const instance = new MockCatalogTrackDecoder();
 	instance.decodeFrom.mockResolvedValue(undefined);
 	instance.nextTrack.mockResolvedValue([{ name: "catalog" }, undefined] as any);

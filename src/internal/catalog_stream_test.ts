@@ -1,10 +1,4 @@
-import type {
-	Frame,
-	GroupReader,
-	GroupWriter,
-	TrackReader,
-	TrackWriter,
-} from "@okudai/moq";
+import type { Frame, GroupReader, GroupWriter, TrackReader, TrackWriter } from "@okudai/moq";
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { background, Context, withCancel } from "golikejs/context";
 import { JsonLineDecoder, JsonLineEncoder } from "../internal/json.ts";

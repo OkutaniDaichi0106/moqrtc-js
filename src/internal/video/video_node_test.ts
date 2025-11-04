@@ -280,42 +280,45 @@ Deno.test("MediaStreamVideoSourceNode", async (t) => {
 		}
 	});
 
-	await t.step("should create with polyfill when MediaStreamTrackProcessor unavailable", async () => {
-		// Setup
-		mockTrack = {
-			kind: "video",
-			getSettings: () => ({ frameRate: 30, width: 640, height: 480 }),
-			stop: () => {},
-		} as any;
+	await t.step(
+		"should create with polyfill when MediaStreamTrackProcessor unavailable",
+		async () => {
+			// Setup
+			mockTrack = {
+				kind: "video",
+				getSettings: () => ({ frameRate: 30, width: 640, height: 480 }),
+				stop: () => {},
+			} as any;
 
-		// Remove MediaStreamTrackProcessor
-		originalMediaStreamTrackProcessor = (globalThis as any).MediaStreamTrackProcessor;
-		delete (globalThis as any).MediaStreamTrackProcessor;
+			// Remove MediaStreamTrackProcessor
+			originalMediaStreamTrackProcessor = (globalThis as any).MediaStreamTrackProcessor;
+			delete (globalThis as any).MediaStreamTrackProcessor;
 
-		// Mock document.createElement
-		const mockVideo = {
-			srcObject: null,
-			play: () => Promise.resolve(),
-			onloadedmetadata: null,
-			videoWidth: 640,
-			videoHeight: 480,
-		};
-		const originalCreateElement = document.createElement;
-		document.createElement = () => mockVideo as any;
+			// Mock document.createElement
+			const mockVideo = {
+				srcObject: null,
+				play: () => Promise.resolve(),
+				onloadedmetadata: null,
+				videoWidth: 640,
+				videoHeight: 480,
+			};
+			const originalCreateElement = document.createElement;
+			document.createElement = () => mockVideo as any;
 
-		try {
-			const { MediaStreamVideoSourceNode } = await import("./video_node.ts");
-			const node = new MediaStreamVideoSourceNode(mockTrack);
+			try {
+				const { MediaStreamVideoSourceNode } = await import("./video_node.ts");
+				const node = new MediaStreamVideoSourceNode(mockTrack);
 
-			assertEquals(node.track, mockTrack);
-			// Note: createElement call verification would need spy implementation
-			assert(mockVideo.srcObject !== null);
-		} finally {
-			// Restore
-			document.createElement = originalCreateElement;
-			(globalThis as any).MediaStreamTrackProcessor = originalMediaStreamTrackProcessor;
-		}
-	});
+				assertEquals(node.track, mockTrack);
+				// Note: createElement call verification would need spy implementation
+				assert(mockVideo.srcObject !== null);
+			} finally {
+				// Restore
+				document.createElement = originalCreateElement;
+				(globalThis as any).MediaStreamTrackProcessor = originalMediaStreamTrackProcessor;
+			}
+		},
+	);
 
 	await t.step("should dispose and stop track", async () => {
 		// Setup
@@ -323,7 +326,9 @@ Deno.test("MediaStreamVideoSourceNode", async (t) => {
 		mockTrack = {
 			kind: "video",
 			getSettings: () => ({ frameRate: 30, width: 640, height: 480 }),
-			stop: () => { stopCalled = true; },
+			stop: () => {
+				stopCalled = true;
+			},
 		} as any;
 
 		mockStream = new ReadableStream({
@@ -357,7 +362,11 @@ Deno.test("MediaStreamVideoSourceNode", async (t) => {
 		} as any;
 
 		const { MediaStreamVideoSourceNode } = await import("./video_node.ts");
-		assertThrows(() => new MediaStreamVideoSourceNode(badTrack), Error, "track has no settings");
+		assertThrows(
+			() => new MediaStreamVideoSourceNode(badTrack),
+			Error,
+			"track has no settings",
+		);
 	});
 });
 
@@ -463,7 +472,6 @@ Deno.test("VideoAnalyserNode", async (t) => {
 		// Should not throw despite the error
 	});
 });
-
 
 Deno.test("VideoDestinationNode", async (t) => {
 	let context: VideoContext;
@@ -1226,7 +1234,7 @@ Deno.test("VideoDecodeNode", async (t) => {
 					bytes: new Uint8Array([0, 0, 0, 0, 1, 2, 3]),
 				});
 				controller.close();
-			}
+			},
 		});
 
 		await decoderNode.decodeFrom(mockReader);

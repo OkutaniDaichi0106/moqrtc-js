@@ -1,21 +1,11 @@
 import type { BytesFrame } from "@okudai/moq";
-import {
-	GroupWriter,
-	InternalSubscribeErrorCode,
-	TrackReader
-} from "@okudai/moq";
+import { GroupWriter, InternalSubscribeErrorCode, TrackReader } from "@okudai/moq";
 import { Channel } from "golikejs";
 import type { CancelFunc, Context } from "golikejs/context";
-import {
-	background,
-	watchPromise,
-	withCancel
-} from "golikejs/context";
+import { background, watchPromise, withCancel } from "golikejs/context";
 import { CatalogInitSchema } from "../catalog/init.ts";
 import type { CatalogLine, TrackDescriptor } from "../catalog/track.ts";
-import {
-	CatalogLineSchema
-} from "../catalog/track.ts";
+import { CatalogLineSchema } from "../catalog/track.ts";
 import { EncodedJsonChunk, JsonLineDecoder, JsonLineEncoder } from "../internal/json.ts";
 import type { EncodedChunk, EncodeDestination } from "./container.ts";
 

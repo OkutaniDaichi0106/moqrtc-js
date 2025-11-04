@@ -109,7 +109,13 @@ export class MockMediaStream {
 }
 
 // Setup function to create test environment
-export function setupTestEnvironment(): { mockMediaDevices: MockMediaDevices; originalNavigator: any; originalSetTimeout: any; originalClearTimeout: any; activeTimers: number[] } {
+export function setupTestEnvironment(): {
+	mockMediaDevices: MockMediaDevices;
+	originalNavigator: any;
+	originalSetTimeout: any;
+	originalClearTimeout: any;
+	activeTimers: number[];
+} {
 	const mockMediaDevices = new MockMediaDevices();
 	const originalNavigator = (globalThis as any).navigator;
 	const originalSetTimeout = globalThis.setTimeout;
@@ -117,7 +123,11 @@ export function setupTestEnvironment(): { mockMediaDevices: MockMediaDevices; or
 	const activeTimers: number[] = [];
 
 	// Mock setTimeout to track timers
-	const mockSetTimeout = (callback: (...args: any[]) => void, delay?: number, ...args: any[]): number => {
+	const mockSetTimeout = (
+		callback: (...args: any[]) => void,
+		delay?: number,
+		...args: any[]
+	): number => {
 		const timerId = originalSetTimeout(callback, delay, ...args);
 		activeTimers.push(timerId);
 		return timerId;
@@ -143,11 +153,22 @@ export function setupTestEnvironment(): { mockMediaDevices: MockMediaDevices; or
 	globalThis.setTimeout = mockSetTimeout as any;
 	globalThis.clearTimeout = mockClearTimeout as any;
 
-	return { mockMediaDevices, originalNavigator, originalSetTimeout, originalClearTimeout, activeTimers };
+	return {
+		mockMediaDevices,
+		originalNavigator,
+		originalSetTimeout,
+		originalClearTimeout,
+		activeTimers,
+	};
 }
 
 // Cleanup function
-export function cleanupTestEnvironment(originalNavigator: any, originalSetTimeout: any, originalClearTimeout: any, activeTimers: number[]): void {
+export function cleanupTestEnvironment(
+	originalNavigator: any,
+	originalSetTimeout: any,
+	originalClearTimeout: any,
+	activeTimers: number[],
+): void {
 	// Clear all active timers
 	for (const timerId of activeTimers) {
 		try {

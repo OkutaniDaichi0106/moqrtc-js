@@ -50,7 +50,8 @@ Deno.test("Camera", async (t) => {
 			assertEquals(camera.constraints, constraints);
 			assertEquals(camera.device.preferred, "camera-device-id");
 		});
-	});	await t.step("getVideoTrack", async (t) => {
+	});
+	await t.step("getVideoTrack", async (t) => {
 		await t.step("gets video track when enabled", async () => {
 			const camera = new Camera({ enabled: true });
 			const mockDevice = new MockDevice();
@@ -106,7 +107,7 @@ Deno.test("Camera", async (t) => {
 			await assertRejects(
 				() => camera.getVideoTrack(),
 				Error,
-				"Camera is not enabled"
+				"Camera is not enabled",
 			);
 		});
 
@@ -120,7 +121,7 @@ Deno.test("Camera", async (t) => {
 			await assertRejects(
 				() => camera.getVideoTrack(),
 				Error,
-				"Failed to obtain camera track"
+				"Failed to obtain camera track",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 		});
@@ -136,7 +137,7 @@ Deno.test("Camera", async (t) => {
 			await assertRejects(
 				() => camera.getVideoTrack(),
 				Error,
-				"Device access denied"
+				"Device access denied",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 		});
@@ -154,7 +155,9 @@ Deno.test("Camera", async (t) => {
 			await camera.getVideoTrack();
 
 			let stopCalled = false;
-			mockTrack.stop = () => { stopCalled = true; };
+			mockTrack.stop = () => {
+				stopCalled = true;
+			};
 
 			camera.close();
 
@@ -201,9 +204,9 @@ Deno.test("Camera", async (t) => {
 			mockDevice.kind = "video";
 			const mockTrack = new MockMediaStreamTrack("video-track-1");
 			// Override stop to throw error
-			mockTrack.stop = () => { 
+			mockTrack.stop = () => {
 				mockTrack.stopCallCount++;
-				throw new Error("Stop failed"); 
+				throw new Error("Stop failed");
 			};
 			mockDevice.getTrackResult = mockTrack;
 			(camera as any).device = mockDevice;
@@ -223,9 +226,9 @@ Deno.test("Camera", async (t) => {
 			const camera = new Camera({ enabled: true });
 			const mockDevice = new MockDevice();
 			mockDevice.kind = "video";
-			mockDevice.close = () => { 
+			mockDevice.close = () => {
 				mockDevice.closeCallCount++;
-				throw new Error("Device close failed"); 
+				throw new Error("Device close failed");
 			};
 			const mockTrack = new MockMediaStreamTrack("video-track-1");
 			mockDevice.getTrackResult = mockTrack;
@@ -268,9 +271,9 @@ Deno.test("Camera", async (t) => {
 			assertEquals(mockDevice.getTrackCallCount, 1);
 
 			let stopCalled = false;
-			mockTrack.stop = () => { 
+			mockTrack.stop = () => {
 				mockTrack.stopCallCount++;
-				stopCalled = true; 
+				stopCalled = true;
 			};
 			camera.close();
 			assertEquals(stopCalled, true);
@@ -286,7 +289,7 @@ Deno.test("Camera", async (t) => {
 			await assertRejects(
 				() => camera.getVideoTrack(),
 				Error,
-				"Camera is not enabled"
+				"Camera is not enabled",
 			);
 
 			camera.enabled = true;
@@ -302,7 +305,7 @@ Deno.test("Camera", async (t) => {
 			await assertRejects(
 				() => camera.getVideoTrack(),
 				Error,
-				"Camera is not enabled"
+				"Camera is not enabled",
 			);
 
 			camera.close();

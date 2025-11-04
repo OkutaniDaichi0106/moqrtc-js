@@ -213,51 +213,57 @@ Deno.test("RoomElement", async (t) => {
 			assertEquals(onleaveArg.remote, true);
 		});
 
-		await t2.step("dispatches 'join' event and adds DOM participant when member joins", async () => {
-			const mockSession = {};
-			const mockPublisher = { name: "test-publisher" };
+		await t2.step(
+			"dispatches 'join' event and adds DOM participant when member joins",
+			async () => {
+				const mockSession = {};
+				const mockPublisher = { name: "test-publisher" };
 
-			element.setAttribute("room-id", "test-room");
+				element.setAttribute("room-id", "test-room");
 
-			let joinEventDispatched = false;
-			element.addEventListener("join", () => {
-				joinEventDispatched = true;
-			});
+				let joinEventDispatched = false;
+				element.addEventListener("join", () => {
+					joinEventDispatched = true;
+				});
 
-			await element.join(mockSession as any, mockPublisher as any);
+				await element.join(mockSession as any, mockPublisher as any);
 
-			// onjoin was called via mock Room; join event should be dispatched
-			assert(joinEventDispatched);
+				// onjoin was called via mock Room; join event should be dispatched
+				assert(joinEventDispatched);
 
-			// Participant DOM should be added
-			const participant = element.querySelector(".remote-member-test-member");
-			assertExists(participant);
-		});
+				// Participant DOM should be added
+				const participant = element.querySelector(".remote-member-test-member");
+				assertExists(participant);
+			},
+		);
 
-		await t2.step("dispatches 'leave' event and removes DOM participant when remote leaves", async () => {
-			const mockSession = {};
-			const mockPublisher = { name: "test-publisher" };
+		await t2.step(
+			"dispatches 'leave' event and removes DOM participant when remote leaves",
+			async () => {
+				const mockSession = {};
+				const mockPublisher = { name: "test-publisher" };
 
-			element.setAttribute("room-id", "test-room");
+				element.setAttribute("room-id", "test-room");
 
-			let leaveEventDispatched = false;
-			element.addEventListener("leave", () => {
-				leaveEventDispatched = true;
-			});
+				let leaveEventDispatched = false;
+				element.addEventListener("leave", () => {
+					leaveEventDispatched = true;
+				});
 
-			await element.join(mockSession as any, mockPublisher as any);
+				await element.join(mockSession as any, mockPublisher as any);
 
-			// participant should be present
-			assertExists(element.querySelector(".remote-member-test-member"));
+				// participant should be present
+				assertExists(element.querySelector(".remote-member-test-member"));
 
-			// Simulate leave by calling room.leave
-			element.room?.leave();
+				// Simulate leave by calling room.leave
+				element.room?.leave();
 
-			assert(leaveEventDispatched);
+				assert(leaveEventDispatched);
 
-			// participant should be removed
-			assert(!element.querySelector(".remote-member-test-member"));
-		});
+				// participant should be removed
+				assert(!element.querySelector(".remote-member-test-member"));
+			},
+		);
 
 		await t2.step("sets error status when onjoin handler throws", async () => {
 			const mockSession = {};

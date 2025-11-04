@@ -132,7 +132,8 @@ Deno.test("audio_offload_worklet", async (t) => {
 
 						// Not initialized yet
 						if (
-							this.#channelsBuffer.length === 0 || this.#channelsBuffer[0] === undefined
+							this.#channelsBuffer.length === 0 ||
+							this.#channelsBuffer[0] === undefined
 						) return true;
 
 						const available =
@@ -222,40 +223,43 @@ Deno.test("audio_offload_worklet", async (t) => {
 		}
 	});
 
-	await t.step("does not register the offload processor when AudioWorkletProcessor is not defined", () => {
-		const mockRegisterProcessor = { calls: [] as any[] };
-		const originalRegisterProcessor = (globalThis as any).registerProcessor;
+	await t.step(
+		"does not register the offload processor when AudioWorkletProcessor is not defined",
+		() => {
+			const mockRegisterProcessor = { calls: [] as any[] };
+			const originalRegisterProcessor = (globalThis as any).registerProcessor;
 
-		(globalThis as any).registerProcessor = (name: string, processor: any) => {
-			mockRegisterProcessor.calls.push([name, processor]);
-		};
+			(globalThis as any).registerProcessor = (name: string, processor: any) => {
+				mockRegisterProcessor.calls.push([name, processor]);
+			};
 
-		try {
-			// AudioWorkletProcessor is not defined (already deleted in afterEach)
+			try {
+				// AudioWorkletProcessor is not defined (already deleted in afterEach)
 
-			// Simulate the worklet registration logic
-			if (typeof AudioWorkletProcessor !== "undefined") {
-				(globalThis as any).registerProcessor(
-					"audio-offloader",
-					class AudioOffloadProcessor extends AudioWorkletProcessor {
-						constructor(options: any) {
-							super();
-							this.port = { onmessage: undefined };
-						}
-						port: any;
+				// Simulate the worklet registration logic
+				if (typeof AudioWorkletProcessor !== "undefined") {
+					(globalThis as any).registerProcessor(
+						"audio-offloader",
+						class AudioOffloadProcessor extends AudioWorkletProcessor {
+							constructor(options: any) {
+								super();
+								this.port = { onmessage: undefined };
+							}
+							port: any;
 
-						process(_inputs: any) {
-							return true;
-						}
-					},
-				);
+							process(_inputs: any) {
+								return true;
+							}
+						},
+					);
+				}
+
+				assertEquals(mockRegisterProcessor.calls.length, 0);
+			} finally {
+				(globalThis as any).registerProcessor = originalRegisterProcessor;
 			}
-
-			assertEquals(mockRegisterProcessor.calls.length, 0);
-		} finally {
-			(globalThis as any).registerProcessor = originalRegisterProcessor;
-		}
-	});
+		},
+	);
 
 	await t.step("throws error in constructor for invalid options", () => {
 		const mockRegisterProcessor = { calls: [] as any[] };
@@ -326,11 +330,21 @@ Deno.test("audio_offload_worklet", async (t) => {
 			const ProcessorCtor = mockRegisterProcessor.calls[0][1] as new (options: any) => any;
 
 			assertThrows(() => new ProcessorCtor({}), Error, "processorOptions is required");
-			assertThrows(() => new ProcessorCtor({ processorOptions: {} }), Error, "invalid channelCount");
-			assertThrows(() => new ProcessorCtor({ channelCount: 2, processorOptions: {} }), Error, "invalid sampleRate");
-			assertThrows(() =>
-				new ProcessorCtor({ channelCount: 2, processorOptions: { sampleRate: 48000 } }),
-				Error, "invalid latency"
+			assertThrows(
+				() => new ProcessorCtor({ processorOptions: {} }),
+				Error,
+				"invalid channelCount",
+			);
+			assertThrows(
+				() => new ProcessorCtor({ channelCount: 2, processorOptions: {} }),
+				Error,
+				"invalid sampleRate",
+			);
+			assertThrows(
+				() =>
+					new ProcessorCtor({ channelCount: 2, processorOptions: { sampleRate: 48000 } }),
+				Error,
+				"invalid latency",
 			);
 		} finally {
 			(globalThis as any).AudioWorkletProcessor = originalAudioWorkletProcessor;
@@ -429,7 +443,11 @@ Deno.test("audio_offload_worklet", async (t) => {
 								this.#readIndex += discard;
 							}
 
-							for (let channel = 0; channel < this.#channelsBuffer.length; channel++) {
+							for (
+								let channel = 0;
+								channel < this.#channelsBuffer.length;
+								channel++
+							) {
 								const src = channels[channel];
 								const dst = this.#channelsBuffer[channel];
 
@@ -467,8 +485,8 @@ Deno.test("audio_offload_worklet", async (t) => {
 								this.#channelsBuffer[0] === undefined
 							) return true;
 
-							const available =
-								(this.#writeIndex - this.#readIndex + this.#channelsBuffer[0].length) %
+							const available = (this.#writeIndex - this.#readIndex +
+								this.#channelsBuffer[0].length) %
 								this.#channelsBuffer[0].length;
 							const numberOfFrames = Math.min(available, outputs[0][0].length);
 

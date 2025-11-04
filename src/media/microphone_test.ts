@@ -110,7 +110,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 		});
 
@@ -120,7 +120,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 		});
 
@@ -134,7 +134,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Failed to obtain microphone track"
+				"Failed to obtain microphone track",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 			assertEquals(mockDevice.getTrackArgs[0], undefined);
@@ -151,7 +151,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone access denied"
+				"Microphone access denied",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 			assertEquals(mockDevice.getTrackArgs[0], undefined);
@@ -186,7 +186,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 0);
 		});
@@ -200,7 +200,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 0);
 		});
@@ -215,7 +215,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Failed to obtain microphone track"
+				"Failed to obtain microphone track",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 			assertEquals(mockDevice.getTrackArgs[0], undefined);
@@ -231,7 +231,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone access denied"
+				"Microphone access denied",
 			);
 			assertEquals(mockDevice.getTrackCallCount, 1);
 			assertEquals(mockDevice.getTrackArgs[0], undefined);
@@ -266,7 +266,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getSettings(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 		});
 
@@ -360,7 +360,7 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getSettings(),
 				Error,
-				"Settings unavailable"
+				"Settings unavailable",
 			);
 		});
 	});
@@ -518,12 +518,12 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 			await assertRejects(
 				() => microphone.getSettings(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 
 			// Enable microphone
@@ -547,12 +547,12 @@ Deno.test("Microphone", async (t) => {
 			await assertRejects(
 				() => microphone.getAudioTrack(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 			await assertRejects(
 				() => microphone.getSettings(),
 				Error,
-				"Microphone is not enabled"
+				"Microphone is not enabled",
 			);
 
 			microphone.close();
