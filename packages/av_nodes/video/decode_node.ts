@@ -154,7 +154,7 @@ export class VideoDecodeNode extends VideoNode {
 	}
 
 	async flush(): Promise<void> {
-		if (this.#decoder.state === "closed") {
+		if (this.#decoder.state !== "configured") {
 			return;
 		}
 		try {

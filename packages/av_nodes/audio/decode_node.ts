@@ -30,7 +30,7 @@ const MAX_DECODE_QUEUE_SIZE = 3;
  */
 export class AudioDecodeNode extends GainNode {
 	#decoder: AudioDecoder;
-	#workletReady: Promise<AudioWorkletNode>;
+	#workletReady: Promise<AudioWorkletNode | undefined>;
 	// Cached once the worklet resolves, so #process can post directly without
 	// allocating a `.then()` continuation on every decoded frame.
 	#worklet: AudioWorkletNode | null = null;
@@ -75,6 +75,13 @@ export class AudioDecodeNode extends GainNode {
 				return worklet;
 			},
 		).catch((error) => {
+			if (
+				(this.#disposed || context.state === "closed") &&
+				error instanceof DOMException &&
+				error.name === "AbortError"
+			) {
+				return undefined;
+			}
 			console.error(
 				"[AudioDecodeNode] failed to load AudioWorklet module:",
 				error,
@@ -252,6 +259,7 @@ export class AudioDecodeNode extends GainNode {
 		}
 
 		this.#workletReady.then((w) => {
+			if (!w) return;
 			w.port.postMessage(
 				{
 					channels: channels,
@@ -265,7 +273,7 @@ export class AudioDecodeNode extends GainNode {
 	}
 
 	async flush(): Promise<void> {
-		if (this.#decoder.state === "closed") {
+		if (this.#decoder.state !== "configured") {
 			return;
 		}
 		try {
@@ -318,7 +326,7 @@ export class AudioDecodeNode extends GainNode {
 		// Disconnect worklet
 		this.#workletReady.then((worklet) => {
 			try {
-				worklet.disconnect();
+				worklet?.disconnect();
 			} catch (_) {
 				/* ignore */
 			}

@@ -272,6 +272,49 @@ Deno.test("AudioDecodeNode", async (t) => {
 		},
 	);
 
+	await t.step(
+		"should safely flush, close, and dispose when unconfigured",
+		async () => {
+			const ctx = createContext();
+			const fakeDecoder = new FakeAudioDecoder({
+				output: () => {},
+				error: () => {},
+			});
+			const node = createNodeWithInstance(ctx, fakeDecoder);
+			assertEquals(node.decoderState, "unconfigured");
+
+			await node.flush();
+			await node.close();
+			node.dispose();
+		},
+	);
+
+	await t.step(
+		"should silently swallow AbortError on early disposal during worklet load",
+		async () => {
+			const ctx = createContext();
+			let rejectAddModule!: (err: unknown) => void;
+			ctx.audioWorklet.addModule = () =>
+				new Promise<void>((_, reject) => {
+					rejectAddModule = reject;
+				});
+
+			const node = createNodeWithDecoder(
+				ctx,
+				FakeAudioDecoder as unknown as new (config: AudioDecoderInit) => unknown,
+			);
+			node.dispose();
+
+			// AbortError is triggered when addModule rejects after disposal
+			rejectAddModule(
+				new DOMException("Unable to load a worklet's module.", "AbortError"),
+			);
+
+			// Allow promise rejection microtasks to settle
+			await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+		},
+	);
+
 	await t.step("cleanup", () => {
 		restoreGainNode();
 		restoreAudioWorkletNode();

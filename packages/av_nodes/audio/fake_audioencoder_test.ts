@@ -105,6 +105,12 @@ export class FakeAudioEncoder extends EventTarget {
 	}
 
 	async flush(): Promise<void> {
+		if (this.state !== "configured") {
+			throw new DOMException(
+				"Failed to execute 'flush' on 'AudioEncoder': Cannot call 'flush' on an unconfigured codec.",
+				"InvalidStateError",
+			);
+		}
 		await new Promise<void>((resolve) => queueMicrotask(resolve));
 	}
 

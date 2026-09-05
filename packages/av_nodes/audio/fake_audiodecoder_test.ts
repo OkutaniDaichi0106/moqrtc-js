@@ -74,6 +74,14 @@ export class FakeAudioDecoder extends EventTarget {
 	}
 
 	flush(): Promise<void> {
+		if (this.state !== "configured") {
+			return Promise.reject(
+				new DOMException(
+					"Failed to execute 'flush' on 'AudioDecoder': Cannot call 'flush' on an unconfigured codec.",
+					"InvalidStateError",
+				),
+			);
+		}
 		this.flushCalls++;
 		return new Promise<void>((resolve) => queueMicrotask(resolve));
 	}

@@ -789,6 +789,36 @@ Deno.test("AudioEncodeNode - worklet #next path", async (t) => {
 		assertEquals(encoder.encodeCalls.length, before);
 	});
 
+	await t.step("safely flushes and disposes when unconfigured", async () => {
+		const ctx = new FakeAudioContext();
+		const unconfiguredNode = new AudioEncodeNode(ctx);
+		assertEquals(unconfiguredNode.encoderState, "unconfigured");
+
+		await unconfiguredNode.flush();
+		await unconfiguredNode.dispose();
+	});
+
+	await t.step(
+		"silently swallows AbortError on early disposal during worklet load",
+		async () => {
+			const ctx = new FakeAudioContext();
+			let rejectAddModule!: (err: unknown) => void;
+			ctx.audioWorklet.addModule = () =>
+				new Promise<void>((_, reject) => {
+					rejectAddModule = reject;
+				});
+
+			const node = new AudioEncodeNode(ctx);
+			await node.dispose();
+
+			rejectAddModule(
+				new DOMException("Unable to load a worklet's module.", "AbortError"),
+			);
+
+			await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+		},
+	);
+
 	await t.step("cleanup", () => {
 		restoreAudioData();
 		restoreAudioWorkletNode();

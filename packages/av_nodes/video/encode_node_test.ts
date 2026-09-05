@@ -298,6 +298,66 @@ Deno.test("VideoEncodeNode - with mocks", async (t) => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 		},
 	);
+
+	await t.step(
+		"should safely flush and dispose when unconfigured",
+		async () => {
+			const restore = overrideVideoEncoder(FakeVideoEncoder);
+			try {
+				const unconfiguredNode = new VideoEncodeNode(context);
+				assertEquals(unconfiguredNode.encoderState, "unconfigured");
+
+				await unconfiguredNode.flush();
+				await unconfiguredNode.dispose();
+			} finally {
+				restore();
+			}
+		},
+	);
+
+	await t.step(
+		"should tolerate queue size up to default maxQueueSize (4)",
+		() => {
+			const restore = overrideVideoEncoder(
+				class {
+					constructor() {
+						return mockEncoder;
+					}
+				},
+			);
+			let node!: VideoEncodeNode;
+			try {
+				mockEncoder.state = "configured";
+				node = new VideoEncodeNode(context);
+			} finally {
+				restore();
+			}
+
+			// Simulate queue sizes 0, 1, 2, 3, 4
+			for (let q = 0; q <= 4; q++) {
+				mockEncoder.encodeQueueSize = q;
+				const frame = new FakeVideoFrame();
+				const beforeCalls = mockEncoder.encodeCalls.length;
+				node.process(frame);
+				assertEquals(
+					mockEncoder.encodeCalls.length,
+					beforeCalls + 1,
+					`Should encode frame at queue size ${q}`,
+				);
+			}
+
+			// When queue size exceeds 4, frame should be dropped
+			mockEncoder.encodeQueueSize = 5;
+			const frame = new FakeVideoFrame();
+			const beforeCalls = mockEncoder.encodeCalls.length;
+			node.process(frame);
+			assertEquals(
+				mockEncoder.encodeCalls.length,
+				beforeCalls,
+				"Should drop frame at queue size > maxQueueSize (5)",
+			);
+		},
+	);
 });
 
 Deno.test("VideoEncodeNode - cleanup", () => {
