@@ -2,21 +2,28 @@ import type { CancelFunc } from "@okdaichi/golikejs/context";
 import type { VideoContext } from "./context.ts";
 import { VideoNode } from "./video_node.ts";
 
-const MAX_QUEUE_SIZE = 2;
+const DEFAULT_MAX_QUEUE_SIZE = 4;
+
+export interface VideoEncodeNodeOptions {
+	isKey?: IsKeyFunction;
+	maxQueueSize?: number;
+}
 
 export class VideoEncodeNode extends VideoNode {
 	readonly context: VideoContext;
 	#encoder: VideoEncoder;
 	#isKey: IsKeyFunction;
+	#maxQueueSize: number;
 	#dests: Map<VideoEncodeDestination, CancelFunc> = new Map();
 
 	constructor(
 		context: VideoContext,
-		options?: { isKey?: IsKeyFunction },
+		options?: VideoEncodeNodeOptions,
 	) {
 		super({ numberOfInputs: 1, numberOfOutputs: 1 });
 		this.context = context;
 		this.#isKey = options?.isKey ?? (() => false);
+		this.#maxQueueSize = options?.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
 		this.context._register(this);
 
 		this.#encoder = new VideoEncoder({
@@ -58,7 +65,7 @@ export class VideoEncodeNode extends VideoNode {
 		}
 
 		// Backpressure: Drop frames if encoder is overloaded
-		if (this.encodeQueueSize > MAX_QUEUE_SIZE) {
+		if (this.encodeQueueSize > this.#maxQueueSize) {
 			console.warn(
 				`[VideoEncodeNode] Dropping frame, queue size: ${this.encodeQueueSize}`,
 			);
@@ -85,7 +92,7 @@ export class VideoEncodeNode extends VideoNode {
 	}
 
 	async flush(): Promise<void> {
-		if (this.#encoder.state === "closed") {
+		if (this.#encoder.state !== "configured") {
 			return;
 		}
 		try {

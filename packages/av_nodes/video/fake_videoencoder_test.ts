@@ -78,6 +78,12 @@ export class FakeVideoEncoder {
 	}
 
 	async flush(): Promise<void> {
+		if (this.state !== "configured") {
+			throw new DOMException(
+				"Failed to execute 'flush' on 'VideoEncoder': Cannot call 'flush' on an unconfigured codec.",
+				"InvalidStateError",
+			);
+		}
 		this.flushCalls++;
 		// Drain pending microtasks so output callbacks fire before flush resolves
 		await new Promise<void>((resolve) => queueMicrotask(resolve));

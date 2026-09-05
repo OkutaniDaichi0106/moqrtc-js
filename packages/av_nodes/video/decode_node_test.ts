@@ -432,4 +432,17 @@ Deno.test("VideoDecodeNode", async (t) => {
 			}
 		},
 	);
+
+	await t.step("should safely flush and dispose when unconfigured", async () => {
+		const restore = overrideVideoDecoder(FakeVideoDecoder);
+		try {
+			const unconfiguredNode = new VideoDecodeNode(context);
+			assertEquals(unconfiguredNode.decoderState, "unconfigured");
+
+			await unconfiguredNode.flush();
+			await unconfiguredNode.dispose();
+		} finally {
+			restore();
+		}
+	});
 });

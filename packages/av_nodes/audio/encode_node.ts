@@ -9,6 +9,7 @@ interface AudioContextLike {
 	readonly sampleRate: number;
 	readonly destination: { readonly channelCount: number };
 	readonly audioWorklet: { addModule(moduleUrl: string): Promise<void> };
+	readonly state?: AudioContextState;
 }
 
 // Backpressure management: Maximum queue size before dropping frames
@@ -32,7 +33,7 @@ const MAX_ENCODE_QUEUE_SIZE = 2;
  */
 export class AudioEncodeNode extends GainNode {
 	#encoder: AudioEncoder;
-	#workletReady: Promise<AudioWorkletNode>;
+	#workletReady: Promise<AudioWorkletNode | undefined>;
 	#disposed = false;
 	#dests: Map<AudioEncodeDestination, CancelFunc> = new Map();
 	// Retained to tear down on dispose: closing the controller unblocks #next's
@@ -113,6 +114,13 @@ export class AudioEncodeNode extends GainNode {
 				return worklet;
 			},
 		).catch((e) => {
+			if (
+				(this.#disposed || context.state === "closed") &&
+				e instanceof DOMException &&
+				e.name === "AbortError"
+			) {
+				return undefined;
+			}
 			console.error("[AudioEncodeNode] Failed to initialize worklet:", e);
 			throw e;
 		});
@@ -286,7 +294,7 @@ export class AudioEncodeNode extends GainNode {
 	}
 
 	async flush(): Promise<void> {
-		if (this.#encoder.state === "closed") {
+		if (this.#encoder.state !== "configured") {
 			return;
 		}
 		try {
@@ -344,7 +352,7 @@ export class AudioEncodeNode extends GainNode {
 		// Clean up worklet
 		this.#workletReady.then((worklet) => {
 			try {
-				worklet.disconnect();
+				worklet?.disconnect();
 			} catch (_) {
 				/* ignore */
 			}
