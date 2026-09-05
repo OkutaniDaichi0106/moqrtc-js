@@ -61,6 +61,9 @@ Merged work on `main` not yet cut as a tagged release. The Deno runtime migratio
 
 ### Changed
 
+- `AudioEncodeNode`: replace recursive `queueMicrotask` in `#next` with a `while` loop, cutting pipeline latency in half and doubling throughput (~1.07M → 2.22M fps in benchmarks) ([#51]).
+- `VideoEncodeNode` / `AudioEncodeNode`: iterate destinations directly in WebCodecs `output()` callback, eliminating per-chunk `Array.from()` and `Promise.allSettled()` allocations ([#51]).
+- `AudioDecodeNode`: pre-allocate channel extraction arrays and eliminate per-frame `channels.map()` buffer transfers in `#process` ([#51]).
 - `VideoEncodeNode`: support `maxQueueSize` option defaulting to 4 (was hardcoded 2) to accommodate hardware encoder startup buffering ([#50]).
 - CI now runs `deno lint` for the published packages (`@okdaichi/av-nodes`, `@okdaichi/media-log`) alongside `check`/`test`. The one blocker — `FakeAudioDataCtor` in `packages/av_nodes/audio/encode_bench.ts` calling `super()` in both branches of an if/else — was refactored to a single unconditional `super()` via an arg-resolving helper (no behavior change) ([#48]).
 
@@ -105,6 +108,7 @@ Merged work on `main` not yet cut as a tagged release. The Deno runtime migratio
 [#44]: https://github.com/okdaichi/moqrtc-js/pull/44
 [#48]: https://github.com/okdaichi/moqrtc-js/pull/48
 [#50]: https://github.com/okdaichi/moqrtc-js/pull/50
+[#51]: https://github.com/okdaichi/moqrtc-js/pull/51
 [0.1.0]: https://github.com/okdaichi/moqrtc-js/releases/tag/media-log/v0.1.0
 [0.10.1]: https://github.com/okdaichi/moqrtc-js/releases/tag/av-nodes/v0.10.1
 [0.10.2]: https://github.com/okdaichi/moqrtc-js/compare/av-nodes/v0.10.1...av-nodes/v0.10.2

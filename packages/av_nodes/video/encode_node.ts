@@ -29,13 +29,22 @@ export class VideoEncodeNode extends VideoNode {
 		this.#encoder = new VideoEncoder({
 			output: (chunk, meta) => {
 				// Pass encoded chunk to all registered destinations
-				Promise.allSettled(Array.from(this.#dests, async ([dest, cancel]) => {
-					const err = await dest.output(chunk, meta?.decoderConfig);
-					if (err !== undefined) {
+				for (const [dest, cancel] of this.#dests) {
+					try {
+						void dest.output(chunk, meta?.decoderConfig).then((err) => {
+							if (err !== undefined) {
+								this.#dests.delete(dest);
+								cancel();
+							}
+						}).catch(() => {
+							this.#dests.delete(dest);
+							cancel();
+						});
+					} catch (_) {
 						this.#dests.delete(dest);
 						cancel();
 					}
-				}));
+				}
 			},
 			error: (e) => {
 				console.error("[VideoEncodeNode] encoder error:", e);
