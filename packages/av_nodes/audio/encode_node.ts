@@ -49,15 +49,23 @@ export class AudioEncodeNode extends GainNode {
 		this.channelCount = Math.max(1, context.destination.channelCount);
 		this.channelCountMode = "explicit" as ChannelCountMode;
 		this.#encoder = new AudioEncoder({
-			output: async (chunk, meta) => {
-				// Use allSettled to ensure one destination error doesn't affect others
-				await Promise.allSettled(Array.from(this.#dests, async ([dest, cancel]) => {
-					const err = await dest.output(chunk, meta?.decoderConfig);
-					if (err !== undefined) {
+			output: (chunk, meta) => {
+				for (const [dest, cancel] of this.#dests) {
+					try {
+						void dest.output(chunk, meta?.decoderConfig).then((err) => {
+							if (err !== undefined) {
+								this.#dests.delete(dest);
+								cancel();
+							}
+						}).catch(() => {
+							this.#dests.delete(dest);
+							cancel();
+						});
+					} catch (_) {
 						this.#dests.delete(dest);
 						cancel();
 					}
-				}));
+				}
 			},
 			error: (e) => {
 				console.error("[AudioEncodeNode] encoder error:", e);
@@ -165,77 +173,66 @@ export class AudioEncodeNode extends GainNode {
 	}
 
 	async #next(stream: ReadableStreamDefaultReader<AudioData>): Promise<void> {
-		// Stop processing if disposed
-		if (this.#disposed) {
-			stream.releaseLock();
-			return;
-		}
-
-		const { done, value } = await stream.read();
-		if (done) {
-			stream.releaseLock();
-			return;
-		}
-
-		// Check again after await - state may have changed
-		if (this.#disposed) {
-			value.close();
-			stream.releaseLock();
-			return;
-		}
-
-		// Backpressure: When queue is overloaded, drop this frame but wait for the
-		// encoder to actually drain before reading the next one. Rescheduling via
-		// queueMicrotask without waiting busy-spins forever while the worklet
-		// keeps producing frames, starving the encoder of any chance to catch up.
-		if (this.encodeQueueSize > MAX_ENCODE_QUEUE_SIZE) {
-			console.warn(
-				`[AudioEncodeNode] Dropping frame, queue size: ${this.encodeQueueSize}, waiting for drain...`,
-			);
-			value.close();
-
-			if (this.#encoder.state === "closed") {
-				stream.releaseLock();
-				return;
-			}
-
-			const drained = await this.#waitForEncoderDrain(5000);
-			if (!drained) {
-				console.warn(
-					"[AudioEncodeNode] Encoder stalled, stopping stream reads after timeout.",
-				);
-				stream.releaseLock();
-				return;
-			}
-
-			queueMicrotask(() => this.#next(stream));
-			return;
-		}
-
-		// Ownership: this node owns `value` — the ReadableStream is created in
-		// the constructor and the AudioData is constructed here from worklet
-		// messages. WebCodecs encode() captures what it needs synchronously, so
-		// we can encode directly and close immediately after — no clone needed
-		// (unlike process(), where the caller owns the frame).
 		try {
-			this.#encoder.encode(value);
-		} catch (e) {
-			// encode() throws InvalidStateError on an unconfigured codec — e.g.
-			// the caller never called configure() (or configure failed) yet is
-			// still routing audio in. Rescheduling would spin here forever,
-			// logging the same error once per frame. Stop the loop instead; a
-			// later configure() must re-encodeTo() to restart it.
-			if (!this.#disposed) {
-				console.error("[AudioEncodeNode] encode error — stopping loop:", e);
+			while (!this.#disposed) {
+				const { done, value } = await stream.read();
+				if (done) {
+					return;
+				}
+
+				// Check again after await - state may have changed
+				if (this.#disposed) {
+					value.close();
+					return;
+				}
+
+				// Backpressure: When queue is overloaded, drop this frame but wait for the
+				// encoder to actually drain before reading the next one.
+				if (this.encodeQueueSize > MAX_ENCODE_QUEUE_SIZE) {
+					console.warn(
+						`[AudioEncodeNode] Dropping frame, queue size: ${this.encodeQueueSize}, waiting for drain...`,
+					);
+					value.close();
+
+					if (this.#encoder.state === "closed") {
+						return;
+					}
+
+					const drained = await this.#waitForEncoderDrain(5000);
+					if (!drained) {
+						console.warn(
+							"[AudioEncodeNode] Encoder stalled, stopping stream reads after timeout.",
+						);
+						return;
+					}
+
+					continue;
+				}
+
+				// Ownership: this node owns `value` — the ReadableStream is created in
+				// the constructor and the AudioData is constructed here from worklet
+				// messages. WebCodecs encode() captures what it needs synchronously, so
+				// we can encode directly and close immediately after — no clone needed
+				// (unlike process(), where the caller owns the frame).
+				try {
+					this.#encoder.encode(value);
+				} catch (e) {
+					// encode() throws InvalidStateError on an unconfigured codec — e.g.
+					// the caller never called configure() (or configure failed) yet is
+					// still routing audio in. Stop the loop instead; a
+					// later configure() must re-encodeTo() to restart it.
+					if (!this.#disposed) {
+						console.error("[AudioEncodeNode] encode error — stopping loop:", e);
+					}
+					value.close();
+					return;
+				}
+
+				value.close();
 			}
-			value.close();
+		} finally {
 			stream.releaseLock();
-			return;
 		}
-
-		value.close();
-
-		queueMicrotask(() => this.#next(stream));
 	}
 
 	#waitForEncoderDrain(timeoutMs: number): Promise<boolean> {

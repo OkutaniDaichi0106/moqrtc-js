@@ -225,11 +225,15 @@ export class AudioDecodeNode extends GainNode {
 		}
 
 		// Extract audio channels from AudioData
-		const channels: Float32Array[] = [];
-		for (let i = 0; i < input.numberOfChannels; i++) {
-			const data = new Float32Array(input.numberOfFrames);
+		const numChannels = input.numberOfChannels;
+		const numFrames = input.numberOfFrames;
+		const channels = new Array<Float32Array>(numChannels);
+		const transfer = new Array<ArrayBuffer>(numChannels);
+		for (let i = 0; i < numChannels; i++) {
+			const data = new Float32Array(numFrames);
 			input.copyTo(data, { format: "f32-planar", planeIndex: i });
-			channels.push(data);
+			channels[i] = data;
+			transfer[i] = data.buffer;
 		}
 
 		// Send AudioData to the worklet.
@@ -250,7 +254,7 @@ export class AudioDecodeNode extends GainNode {
 						channels: channels,
 						timestamp: input.timestamp,
 					},
-					channels.map((d) => d.buffer), // Transfer ownership of the buffers
+					transfer, // Transfer ownership of the buffers
 				);
 			} catch (_) {
 				/* ignore */
@@ -265,7 +269,7 @@ export class AudioDecodeNode extends GainNode {
 					channels: channels,
 					timestamp: input.timestamp,
 				},
-				channels.map((d) => d.buffer), // Transfer ownership of the buffers
+				transfer, // Transfer ownership of the buffers
 			);
 		}).catch(() => {
 			/* ignore */
